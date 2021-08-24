@@ -1,0 +1,5 @@
+"","formula","elpd_diff","se_diff"
+"cod_surv3","surv.rate_stnd ~ s(julian.first, k = 4) + s(fit.temp.mu, k = 4) + s(mean.cpue.4, k = 4) + bay_fac",0,0
+"cod_surv2","surv.rate_stnd ~ s(julian.first, k = 4) + s(fit.temp.mu, k = 4) + s(mean.cpue.4, k = 4)",-13.8484741626077,6.31586708524919
+"cod_surv1","surv.rate_stnd ~ s(julian.first, k = 4) + s(fit.temp.mu, k = 4)",-28.0506904961179,7.93804255444895
+"cod_surv0","surv.rate_stnd ~ s(julian.first, k = 4)",-29.1819095669917,8.75383972169931

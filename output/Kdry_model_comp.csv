@@ -1,0 +1,4 @@
+"","formula","elpd_diff","se_diff"
+"cod_cond2","Kdry_stnd ~ s(length, k = 4) + s(fit.temp.mu, k = 4) + s(fourth.root.cpue, k = 4) + bay_fac",0,0
+"cod_cond1","Kdry_stnd ~ s(length, k = 4) + s(fit.temp.mu, k = 4) + s(fourth.root.cpue, k = 4)",-6.86923965249849,6.63703934842513
+"cod_cond0","Kdry_stnd ~ s(length, k = 4) + s(fit.temp.mu, k = 4)",-12.1721991636487,7.00507092440548

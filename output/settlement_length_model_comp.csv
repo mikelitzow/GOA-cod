@@ -1,0 +1,6 @@
+"","formula","elpd_diff","se_diff"
+"cod_gamma_settle_len2s","length ~ s(julian, k = 4) + s(temp.anom, k = 4) + s(ln.cpue, k = 4) + (1 | bay_fac/site_fac)",0,0
+"cod_gamma_settle_len3","length ~ s(julian, k = 4) + s(temp.anom, k = 4) + s(ln.cpue, k = 4) + bay_fac",-169.045743516587,19.7393395049164
+"cod_gamma_settle_len2","length ~ s(julian, k = 4) + s(temp.anom, k = 4) + s(ln.cpue, k = 4) + (1 | bay_fac)",-169.100429409102,19.7269529472247
+"cod_gamma_settle_len1","length ~ s(julian, k = 4) + s(temp.anom, k = 4) + s(ln.cpue, k = 4)",-594.777073611514,37.5022857936542
+"cod_gamma_settle_len0","length ~ s(julian, k = 4) + s(temp.anom, k = 4)",-596.563984988291,37.5952427336741

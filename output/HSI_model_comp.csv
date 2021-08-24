@@ -1,0 +1,4 @@
+"","formula","elpd_diff","se_diff"
+"cod_HSI2","HSI.dry_stnd ~ s(length, k = 4) + s(fit.temp.mu, k = 4) + s(fourth.root.cpue, k = 4) + bay_fac",0,0
+"cod_HSI1","HSI.dry_stnd ~ s(length, k = 4) + s(fit.temp.mu, k = 4) + s(fourth.root.cpue, k = 4)",-27.6922713877538,7.79827063574637
+"cod_HSI0","HSI.dry_stnd ~ s(length, k = 4) + s(fit.temp.mu, k = 4)",-34.8228857804775,9.72355248192516

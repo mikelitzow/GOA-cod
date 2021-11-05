@@ -30,7 +30,7 @@ ssb.data <- ssb.data %>%
 names(ssb.data)[2] <- "ssb"
 cod.data <- left_join(cod.data, ssb.data)
 
-temp.data <- read.csv("climate/godas anomalies.csv")
+temp.data <- read.csv("data/godas anomalies.csv")
 cod.data$temp.anom <- temp.data$mean.anom[match(as.numeric(as.character(cod.data$year)), temp.data$year)]
 
 ## get sample sizes!
@@ -124,12 +124,13 @@ g1 <- ggplot(dat_ce) +
     geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
     geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
     geom_line(size = 1, color = "red3") +
-    labs(x = "Egg/larval temperature anomaly", y = "Cod abundance") +
+    labs(x = "Egg/larval temperature anomaly", y = "# fish / set") +
     theme_bw() +
     coord_trans(y = "pseudo_log") +
     geom_rug(aes(x=rug.anom, y=NULL)) +
     scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 400, 600))
 print(g1)
+
 
 ## Julian predictions ##
 
@@ -169,7 +170,7 @@ g2 <- ggplot(dat_ce) +
     geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
     geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
     geom_line(size = 1.5, color = "red3") +
-    labs(x = "Day of year", y = "Cod abundance") +
+    labs(x = "Day of year", y = "# fish / set") +
     theme_bw() +
     coord_trans(y = "pseudo_log") +
     geom_rug(aes(x=rug.anom, y=NULL)) +
@@ -205,7 +206,7 @@ g3 <- ggplot(dat_ce) +
     geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
     geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
     geom_line(size = 1.5, color = "red3") +
-    labs(x = "SSB", y = "Cod abundance") +
+    labs(x = "SSB (t)", y = "# fish / set") +
     theme_bw() +
     coord_trans(y = "pseudo_log") +
     geom_rug(aes(x=rug.anom, y=NULL)) +
@@ -220,10 +221,26 @@ mod.95 <- ce1s_1$bay_fac %>%
     select(bay_fac, estimate__, lower__, upper__)
 names(mod.95)[3:4] <- c("ymin.95", "ymax.95")
 
+
+# correct spelling of Anton Larsen; change Cook Bay to Cook
+mod.95$bay_fac <- as.character(mod.95$bay_fac)
+
+change <- grep("Anton", mod.95$bay_fac)
+mod.95$bay_fac[change] <- "Anton Larsen"
+
+change <- grep("Cook", mod.95$bay_fac)
+mod.95$bay_fac[change] <- "Cook"
+
+mod.95$bay_fac <- as.factor(mod.95$bay_fac)
+
 # set the bays to plot west - east
 order <- read.csv("./data/bay_lat_long.csv")
+order$Bay[1:2] <- c("Anton Larsen", "Cook")
+
 mod.95$long <- order$lon[match(mod.95$bay_fac, order$Bay)]
 mod.95$bay_fac <- reorder(mod.95$bay_fac, desc(mod.95$long))
+
+
 
 theme_set(theme_bw())
 
@@ -231,15 +248,16 @@ g4 <- ggplot(mod.95) +
     aes(x = bay_fac, y = estimate__) +
     geom_errorbar(aes(ymin = ymin.95, ymax = ymax.95), width = 0.5) +
     geom_point(size = 3) +
-    theme(axis.title.x = element_blank(), axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
+    theme(axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
     coord_trans(y = "pseudo_log") +
     scale_y_continuous(breaks=c(0, 1, 10, 100, 1000, 2000)) +
-    ylab("Cod abundance")
+    ylab("# fish / set") +
+    xlab("Bay")
 
 print(g4)
 
-png("./figs/combined_predicted_abundance_cod3s_sg_zinb_k3_Fig2.png", 8, 6, units='in', res=300)
-ggpubr::ggarrange(g1, g2, g3, g4, ncol=2, nrow=2, labels=c("a)", "b)", "c)", "d)"))
+png("./figs/Fig3_combined_predicted_abundance_cod3s_sg_zinb_k3.png", 8, 6, units='in', res=300)
+ggpubr::ggarrange(g1, g3, g2, g4, ncol=2, nrow=2, labels=c("a)", "b)", "c)", "d)"))
 dev.off()
 
 

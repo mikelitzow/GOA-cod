@@ -71,7 +71,8 @@ length_formula <-  bf(length ~ s(julian, k = 4) + (1 | bay_fac/site_fac) + (year
 
 ## Show default priors
 get_prior(length_formula, cod.length.data)
-# using defaults for now!
+
+# set priors
 
 priors_len <- c(set_prior("normal(0, 3)", class = "b"),
                 set_prior("normal(0, 3)", class = "Intercept"),

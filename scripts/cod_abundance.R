@@ -101,7 +101,7 @@ dev.off()
 
 ## 95% CI
 ce1s_1 <- conditional_effects(cod3s_sg_zinb_k3, effect = "temp.anom", re_formula = NA,
-                              probs = c(0.025, 0.975))
+                              probs = c(0.025, 0.975)) 
 ## 90% CI
 ce1s_2 <- conditional_effects(cod3s_sg_zinb_k3, effect = "temp.anom", re_formula = NA,
                               probs = c(0.05, 0.95))
@@ -117,6 +117,18 @@ dat_ce[["upper_80"]] <- ce1s_3$temp.anom[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$temp.anom[["lower__"]]
 dat_ce[["rug.anom"]] <- c(jitter(unique(cod.data$temp.anom), amount = 0.1),
                           rep(NA, 100-length(unique(cod.data$temp.anom))))
+
+## get points to add as scatter
+reduced_formula <-  bf(cod ~ s(julian, k = 3) + s(ssb, k = 3) + bay_fac+ (1 | bay_fac/site_fac),
+                        zi ~ s(julian, k = 3) + s(ssb, k = 3) + bay_fac+ (1 | bay_fac/site_fac))
+
+points.g1 <- posterior_predict(cod3s_sg_zinb_k3, re_formula = reduced_formula)
+
+points.g1 <- conditional_effects(cod3s_sg_zinb_k3, effect = "temp.anom", re_formula = NA, method = "posterior_predict", points = T)
+
+str(point.g1)
+
+points.g1 <- data.frame(effec)
 
 g1 <- ggplot(dat_ce) +
     aes(x = effect1__, y = estimate__) +

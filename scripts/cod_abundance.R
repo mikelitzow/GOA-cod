@@ -260,6 +260,71 @@ png("./figs/Fig3_combined_predicted_abundance_cod3s_sg_zinb_k3.png", 8, 6, units
 ggpubr::ggarrange(g1, g3, g2, g4, ncol=2, nrow=2, labels=c("a)", "b)", "c)", "d)"))
 dev.off()
 
+## add scatter plot for SI -------------------------------
+
+SI.dat <- cod.data %>%
+    select(bay, julian, cod.age.0, temp.anom, ssb)
+
+# fix Anton and Cook
+change <- grep("Anton", SI.dat$bay)
+SI.dat$bay[change] <- "Anton Larsen"
+
+change <- grep("Cook", SI.dat$bay)
+SI.dat$bay[change] <- "Cook"
+
+g1 <- ggplot(SI.dat, aes(temp.anom, cod.age.0)) +
+    geom_point(size = 1, alpha = 0.5) +
+    labs(x = "Egg/larval temperature anomaly", y = "# fish / set") +
+    theme_bw() +
+    coord_trans(y = "pseudo_log") +
+    scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 500, 2000), minor_breaks = NULL)
+
+g1
+
+
+g2 <- ggplot(SI.dat) +
+    aes(julian, cod.age.0) +
+    geom_point(size = 1, alpha = 0.5) +
+    labs(x = "Day of year", y = "# fish / set") +
+    theme_bw() +
+    coord_trans(y = "pseudo_log") +
+    scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 500, 2000), minor_breaks = NULL)
+
+print(g2)
+
+
+g3 <- ggplot(SI.dat) +
+    aes(ssb/1000, cod.age.0) +
+    geom_point(size = 1, alpha = 0.5) +
+    labs(x = "SSB (1000 t)", y = "# fish / set") +
+    theme_bw() +
+    coord_trans(y = "pseudo_log") +
+    scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 500, 2000), minor_breaks = NULL) +
+    scale_x_continuous(breaks=as.numeric(c(40, 60, 80, 100)))
+
+print(g3)
+
+# set the bays to plot west - east
+order <- read.csv("./data/bay_lat_long.csv")
+order$Bay[1:2] <- c("Anton Larsen", "Cook")
+
+SI.dat$long <- order$lon[match(SI.dat$bay, order$Bay)]
+SI.dat$bay <- reorder(SI.dat$bay, desc(SI.dat$long))
+
+g4 <- ggplot(SI.dat) +
+    aes(bay, cod.age.0) +
+    geom_point(size = 1, alpha = 0.5) +
+    theme(axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
+    coord_trans(y = "pseudo_log") +
+    scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 500, 2000), minor_breaks = NULL) +
+    ylab("# fish / set") +
+    xlab("Bay")
+
+print(g4)
+
+png("./figs/SI_abundance_scatter_plots.png", 8, 6, units='in', res=300)
+ggpubr::ggarrange(g1, g3, g2, g4, ncol=2, nrow=2, labels=c("a)", "b)", "c)", "d)"))
+dev.off()
 
 
 ## extra comparison model - 2018 / 2020 bay effects ------------------------------

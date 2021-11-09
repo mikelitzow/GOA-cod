@@ -122,11 +122,19 @@ dat_ce[["rug.anom"]] <- c(jitter(unique(cod.data$temp.anom), amount = 0.1),
 reduced_formula <-  bf(cod ~ s(julian, k = 3) + s(ssb, k = 3) + bay_fac+ (1 | bay_fac/site_fac),
                         zi ~ s(julian, k = 3) + s(ssb, k = 3) + bay_fac+ (1 | bay_fac/site_fac))
 
-points.g1 <- posterior_predict(cod3s_sg_zinb_k3, re_formula = reduced_formula)
+points.g1 <- posterior_predict(cod3s_sg_zinb_k3, re_formula = reduced_formula, new.data = cod.data)
 
-points.g1 <- conditional_effects(cod3s_sg_zinb_k3, effect = "temp.anom", re_formula = NA, method = "posterior_predict", points = T)
+str(points.g1)
 
-str(point.g1)
+
+
+# remove NAs from cod.data
+
+plot.dat <- cod.data %>% 
+    select(cod, julian, temp.anom, ssb, bay_fac, site_fac) %>%
+    na.omit()
+
+nrow(cod.data)
 
 points.g1 <- data.frame(effec)
 

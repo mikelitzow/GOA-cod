@@ -118,20 +118,6 @@ dat_ce[["lower_80"]] <- ce1s_3$temp.anom[["lower__"]]
 dat_ce[["rug.anom"]] <- c(jitter(unique(cod.data$temp.anom), amount = 0.1),
                           rep(NA, 100-length(unique(cod.data$temp.anom))))
 
-## get points to add as scatter
-reduced_formula <-  bf(cod ~ s(julian, k = 3) + s(ssb, k = 3) + bay_fac+ (1 | bay_fac/site_fac),
-                        zi ~ s(julian, k = 3) + s(ssb, k = 3) + bay_fac+ (1 | bay_fac/site_fac))
-
-points.g1 <- posterior_predict(cod3s_sg_zinb_k3, re_formula = reduced_formula)
-
-str(points.g1)
-
-cod.data$points.g1 <- apply(points.g1, 2, median)
-
-points.g1 <- cod.data %>%
-    transmute(temp.anom = jitter(temp.anom, factor = 20),
-              points.g1 = points.g1)
-
 
 g1 <- ggplot(dat_ce) +
     aes(x = effect1__, y = estimate__) +
@@ -143,44 +129,8 @@ g1 <- ggplot(dat_ce) +
     theme_bw() +
     coord_trans(y = "pseudo_log") +
     geom_rug(aes(x=rug.anom, y=NULL)) +
-    scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 400, 600)) +
-    geom_point(data = points.g1, aes(temp.anom, points.g1))
+    scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 400, 600)) 
 print(g1)
-
-
-## compare with k = 4 model---------------------------------------
-cod3s_sg_formula_k4 <-  bf(cod ~ s(julian, k = 4) + s(temp.anom, k = 4) + s(ssb, k = 4) + bay_fac+ (1 | bay_fac/site_fac),
-                        zi ~ s(julian, k = 4) + s(temp.anom, k = 4) + s(ssb, k = 4) + bay_fac+ (1 | bay_fac/site_fac))
-
-
-## fit: zero-inflated --------------------------------------
-
-## model 3 for post-settlement paper
-cod3s_sg_zinb_k4 <- brm(cod3s_sg_formula_k4,
-                        data = cod.data,
-                        prior = mod3sg_priors_zinb,
-                        family = zinb,
-                        cores = 4, chains = 4, iter = 3000,
-                        save_pars = save_pars(all = TRUE),
-                        control = list(adapt_delta = 0.999, max_treedepth = 12))
-saveRDS(cod3s_sg_zinb_k4, file = "output/cod3s_sg_zinb_k4.rds")
-
-cod3s_sg_zinb_k4  <- add_criterion(cod3s_sg_zinb_k4, "bayes_R2",
-                                   moment_match = TRUE, reloo = TRUE,
-                                   cores = 4, k_threshold = 0.7)
-saveRDS(cod3s_sg_zinb_k4, file = "output/cod3s_sg_zinb_k4.rds")
-
-cod3s_sg_zinb_k4 <- readRDS("./output/cod3s_sg_zinb_k4.rds")
-check_hmc_diagnostics(cod3s_sg_zinb_k4$fit)
-neff_lowest(cod3s_sg_zinb_k4$fit)
-rhat_highest(cod3s_sg_zinb_k4$fit)
-summary(cod3s_sg_zinb_k4)
-bayes_R2(cod3s_sg_zinb_k4)
-plot(conditional_smooths(cod3s_sg_zinb_k4), ask = FALSE)
-pdf("./figs/trace_cod3s_sg_zinb_k4.pdf", width = 6, height = 4)
-trace_plot(cod3s_sg_zinb_k4$fit)
-dev.off()
-
 
 ## Julian predictions ##
 
@@ -214,6 +164,7 @@ dat_ce[["lower_80"]] <- ce1s_3$julian[["lower__"]]
 dat_ce[["rug.anom"]] <- c(jitter(unique(cod.data$julian), amount = 0.1),
                           rep(NA, 100-length(unique(cod.data$julian))))
 
+
 g2 <- ggplot(dat_ce) +
     aes(x = effect1__, y = estimate__) +
     geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
@@ -224,7 +175,7 @@ g2 <- ggplot(dat_ce) +
     theme_bw() +
     coord_trans(y = "pseudo_log") +
     geom_rug(aes(x=rug.anom, y=NULL)) +
-    scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 500, 1200))
+    scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 500, 1200)) 
 
 print(g2)
 
@@ -305,6 +256,41 @@ g4 <- ggplot(mod.95) +
     xlab("Bay")
 
 print(g4)
+
+## compare with k = 4 model---------------------------------------
+cod3s_sg_formula_k4 <-  bf(cod ~ s(julian, k = 4) + s(temp.anom, k = 4) + s(ssb, k = 4) + bay_fac+ (1 | bay_fac/site_fac),
+                        zi ~ s(julian, k = 4) + s(temp.anom, k = 4) + s(ssb, k = 4) + bay_fac+ (1 | bay_fac/site_fac))
+
+
+## fit: zero-inflated --------------------------------------
+
+## model 3 for post-settlement paper
+cod3s_sg_zinb_k4 <- brm(cod3s_sg_formula_k4,
+                        data = cod.data,
+                        prior = mod3sg_priors_zinb,
+                        family = zinb,
+                        cores = 4, chains = 4, iter = 3000,
+                        save_pars = save_pars(all = TRUE),
+                        control = list(adapt_delta = 0.999, max_treedepth = 12))
+saveRDS(cod3s_sg_zinb_k4, file = "output/cod3s_sg_zinb_k4.rds")
+
+cod3s_sg_zinb_k4  <- add_criterion(cod3s_sg_zinb_k4, "bayes_R2",
+                                   moment_match = TRUE, reloo = TRUE,
+                                   cores = 4, k_threshold = 0.7)
+saveRDS(cod3s_sg_zinb_k4, file = "output/cod3s_sg_zinb_k4.rds")
+
+cod3s_sg_zinb_k4 <- readRDS("./output/cod3s_sg_zinb_k4.rds")
+check_hmc_diagnostics(cod3s_sg_zinb_k4$fit)
+neff_lowest(cod3s_sg_zinb_k4$fit)
+rhat_highest(cod3s_sg_zinb_k4$fit)
+summary(cod3s_sg_zinb_k4)
+bayes_R2(cod3s_sg_zinb_k4)
+plot(conditional_smooths(cod3s_sg_zinb_k4), ask = FALSE)
+pdf("./figs/trace_cod3s_sg_zinb_k4.pdf", width = 6, height = 4)
+trace_plot(cod3s_sg_zinb_k4$fit)
+dev.off()
+
+
 
 png("./figs/Fig3_combined_predicted_abundance_cod3s_sg_zinb_k3.png", 8, 6, units='in', res=300)
 ggpubr::ggarrange(g1, g3, g2, g4, ncol=2, nrow=2, labels=c("a)", "b)", "c)", "d)"))

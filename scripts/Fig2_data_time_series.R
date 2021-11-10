@@ -21,6 +21,12 @@ recr_2_formula <-  bf(cod ~ s(julian, k = 3) + (1 | bay_fac/site_fac) + (year_fa
 # load the model object
 recr_2_zinb <- readRDS("./output/recr_2_zinb.rds")
 
+check_hmc_diagnostics(recr_2_zinb$fit)
+neff_lowest(recr_2_zinb$fit)
+rhat_highest(recr_2_zinb$fit)
+summary(recr_2_zinb)
+bayes_R2(recr_2_zinb)
+
 ## year predictions ##
 
 ## 95% CI
@@ -85,8 +91,11 @@ cod_length_annual <- brm(length_formula,
                 prior = priors_len,
                 cores = 4, chains = 4, iter = 4000,
                 save_pars = save_pars(all = TRUE),
-                control = list(adapt_delta = 0.9, max_treedepth = 12))
-cod_length_annual  <- add_criterion(cod_length_annual, c("loo", "bayes_R2"), moment_match = TRUE)
+                control = list(adapt_delta = 0.99, max_treedepth = 14))
+saveRDS(cod_length_annual, file = "output/cod_length_annual.rds")
+
+cod_length_annual  <- add_criterion(cod_length_annual, "bayes_R2", moment_match = TRUE)
+
 saveRDS(cod_length_annual, file = "output/cod_length_annual.rds")
 
 cod_length_annual <- readRDS("./output/cod_length_annual.rds")
@@ -149,32 +158,34 @@ Kdry.data <- cod.condition.data %>%
   select(Kdry, julian, length, bay_fac, site_fac, year_fac) %>%
   na.omit()
 
-# fit brms model to Kdry
 # define formula
-Kdry_formula <-  bf(Kdry ~ s(julian, k = 4) + s(length, k = 4) + (1 | bay_fac/site_fac) + (year_fac))
+Kdry_formula <-  bf(Kdry ~ s(julian, k = 3) + (length) +  (year_fac) + (1 | bay_fac/site_fac))
 
 ## Show default priors
 get_prior(Kdry_formula, Kdry.data)
 
-# using defaults for now!
+# set priors
 
 priors_Kdry <- c(set_prior("normal(0, 3)", class = "b"),
                 set_prior("normal(0, 3)", class = "Intercept"),
                 set_prior("student_t(3, 0, 2.5)", class = "sd"),
+                set_prior("student_t(3, 0, 2.5)", class = "sds"),
                 set_prior("student_t(3, 0, 2.5)", class = "sigma"))
 
 ## fit: brms --------------------------------------
 cod_Kdry_annual <- brm(Kdry_formula,
                          data = Kdry.data,
-                         # prior = priors_Kdry,
-                         cores = 4, chains = 4, iter = 5000,
+                         prior = priors_Kdry,
+                         cores = 4, chains = 4, iter = 3500,
                          save_pars = save_pars(all = TRUE),
-                         control = list(adapt_delta = 0.999, max_treedepth = 12))
-cod_Kdry_annual  <- add_criterion(cod_Kdry_annual, c("loo", "bayes_R2"), moment_match = TRUE)
+                         control = list(adapt_delta = 0.999999, max_treedepth = 12))
+saveRDS(cod_Kdry_annual, file = "output/cod_Kdry_annual.rds")
+
+cod_Kdry_annual  <- add_criterion(cod_Kdry_annual, "bayes_R2")
 saveRDS(cod_Kdry_annual, file = "output/cod_Kdry_annual.rds")
 
 cod_Kdry_annual <- readRDS("./output/cod_Kdry_annual.rds")
-check_hmc_diagnostics(cod_Kdry_annual$fit)
+check_hmc_diagnostics(cod_Kdry_annual$fit) # 2 divergent transitions
 neff_lowest(cod_Kdry_annual$fit)
 rhat_highest(cod_Kdry_annual$fit)
 summary(cod_Kdry_annual)
@@ -187,9 +198,48 @@ ppc_dens_overlay(y = y, yrep = yrep_cod_Kdry_annual[sample(nrow(yrep_cod_Kdry_an
   xlim(0, 500) +
   ggtitle("cod_Kdry_annual")
 
+## getting divergent transitions; trying simpler model
+Kdry_formula2 <-  bf(Kdry ~ (julian) + (length) +  (year_fac) + (1 | bay_fac/site_fac))
+
+## Show default priors
+get_prior(Kdry_formula2, Kdry.data)
+
+# set priors
+
+priors_Kdry2 <- c(set_prior("normal(0, 3)", class = "b"),
+                 set_prior("normal(0, 3)", class = "Intercept"),
+                 set_prior("student_t(3, 0, 2.5)", class = "sd"),
+                 set_prior("student_t(3, 0, 2.5)", class = "sigma"))
+
+cod_Kdry_annual2 <- brm(Kdry_formula2,
+                       data = Kdry.data,
+                       prior = priors_Kdry2,
+                       cores = 4, chains = 4, iter = 3500,
+                       save_pars = save_pars(all = TRUE),
+                       control = list(adapt_delta = 0.99999, max_treedepth = 12))
+saveRDS(cod_Kdry_annual2, file = "output/cod_Kdry_annual2.rds")
+
+cod_Kdry_annual2  <- add_criterion(cod_Kdry_annual2, "bayes_R2")
+saveRDS(cod_Kdry_annual2, file = "output/cod_Kdry_annual2.rds")
+
+cod_Kdry_annual2 <- readRDS("./output/cod_Kdry_annual2.rds")
+check_hmc_diagnostics(cod_Kdry_annual2$fit)
+neff_lowest(cod_Kdry_annual2$fit)
+rhat_highest(cod_Kdry_annual2$fit)
+summary(cod_Kdry_annual2)
+bayes_R2(cod_Kdry_annual2)
+plot(cod_Kdry_annual2$criteria$loo, "k")
+plot(conditional_smooths(cod_Kdry_annual2), ask = FALSE)
+y <- cod.length.data$Kdry
+yrep_cod_Kdry_annual  <- fitted(cod_Kdry_annual2, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_cod_Kdry_annual2[sample(nrow(yrep_cod_Kdry_annual2), 25), ]) +
+  xlim(0, 500) +
+  ggtitle("cod_Kdry_annual2")
+
+
 # plot
 ## 95% CI
-cod_Kdry_annual <- readRDS("./output/cod_Kdry_annual.rds")
+cod_Kdry_annual <- readRDS("./output/cod_Kdry_annual2.rds")
 ce1s_1 <- conditional_effects(cod_Kdry_annual, effect = "year_fac", re_formula = NA,
                               probs = c(0.025, 0.975))
 

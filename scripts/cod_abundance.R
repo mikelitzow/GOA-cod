@@ -58,7 +58,7 @@ zinb <- zero_inflated_negbinomial(link = "log", link_shape = "log", link_zi = "l
 
 ## Set priors
 
-mod3sg_priors_zinb_k3 <- c(set_prior("normal(0, 3)", class = "b"),
+mod3sg_priors_zinb <- c(set_prior("normal(0, 3)", class = "b"),
                     set_prior("normal(0, 3)", class = "Intercept"),
                     set_prior("student_t(3, 0, 3)", class = "sds"),
                     set_prior("gamma(0.01, 0.01)", class = "shape"),
@@ -71,7 +71,7 @@ mod3sg_priors_zinb_k3 <- c(set_prior("normal(0, 3)", class = "b"),
 ## model 3 for post-settlement paper
 cod3s_sg_zinb_k3 <- brm(cod3s_sg_formula,
                       data = cod.data,
-                      prior = mod3sg_priors_zinb_k3,
+                      prior = mod3sg_priors_zinb,
                       family = zinb,
                       cores = 4, chains = 4, iter = 3000,
                       save_pars = save_pars(all = TRUE),
@@ -126,16 +126,12 @@ points.g1 <- posterior_predict(cod3s_sg_zinb_k3, re_formula = reduced_formula)
 
 str(points.g1)
 
+cod.data$points.g1 <- apply(points.g1, 2, median)
 
-# remove NAs from cod.data
+points.g1 <- cod.data %>%
+    transmute(temp.anom = jitter(temp.anom, factor = 20),
+              points.g1 = points.g1)
 
-plot.dat <- cod.data %>% 
-    select(cod, julian, temp.anom, ssb, bay_fac, site_fac) %>%
-    na.omit()
-
-nrow(cod.data)
-
-points.g1 <- data.frame(effec)
 
 g1 <- ggplot(dat_ce) +
     aes(x = effect1__, y = estimate__) +
@@ -147,8 +143,43 @@ g1 <- ggplot(dat_ce) +
     theme_bw() +
     coord_trans(y = "pseudo_log") +
     geom_rug(aes(x=rug.anom, y=NULL)) +
-    scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 400, 600))
+    scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 400, 600)) +
+    geom_point(data = points.g1, aes(temp.anom, points.g1))
 print(g1)
+
+
+## compare with k = 4 model---------------------------------------
+cod3s_sg_formula_k4 <-  bf(cod ~ s(julian, k = 4) + s(temp.anom, k = 4) + s(ssb, k = 4) + bay_fac+ (1 | bay_fac/site_fac),
+                        zi ~ s(julian, k = 4) + s(temp.anom, k = 4) + s(ssb, k = 4) + bay_fac+ (1 | bay_fac/site_fac))
+
+
+## fit: zero-inflated --------------------------------------
+
+## model 3 for post-settlement paper
+cod3s_sg_zinb_k4 <- brm(cod3s_sg_formula_k4,
+                        data = cod.data,
+                        prior = mod3sg_priors_zinb,
+                        family = zinb,
+                        cores = 4, chains = 4, iter = 3000,
+                        save_pars = save_pars(all = TRUE),
+                        control = list(adapt_delta = 0.999, max_treedepth = 12))
+saveRDS(cod3s_sg_zinb_k4, file = "output/cod3s_sg_zinb_k4.rds")
+
+cod3s_sg_zinb_k4  <- add_criterion(cod3s_sg_zinb_k4, "bayes_R2",
+                                   moment_match = TRUE, reloo = TRUE,
+                                   cores = 4, k_threshold = 0.7)
+saveRDS(cod3s_sg_zinb_k4, file = "output/cod3s_sg_zinb_k4.rds")
+
+cod3s_sg_zinb_k4 <- readRDS("./output/cod3s_sg_zinb_k4.rds")
+check_hmc_diagnostics(cod3s_sg_zinb_k4$fit)
+neff_lowest(cod3s_sg_zinb_k4$fit)
+rhat_highest(cod3s_sg_zinb_k4$fit)
+summary(cod3s_sg_zinb_k4)
+bayes_R2(cod3s_sg_zinb_k4)
+plot(conditional_smooths(cod3s_sg_zinb_k4), ask = FALSE)
+pdf("./figs/trace_cod3s_sg_zinb_k4.pdf", width = 6, height = 4)
+trace_plot(cod3s_sg_zinb_k4$fit)
+dev.off()
 
 
 ## Julian predictions ##

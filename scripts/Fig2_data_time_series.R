@@ -66,28 +66,6 @@ trace_plot(recr_2_zinb$fit)
 dev.off()
 
 
-## year predictions ##
-
-## 95% CI
-ce1s_1 <- conditional_effects(recr_2_zinb, effect = "year_fac", re_formula = NA,
-                              probs = c(0.025, 0.975))
-
-# ce1s_1 is far better!
-print(ce1s_1)
-
-# make a panel for the fig
-plot.abundance <- ce1s_1$year_fac
-
-abundance <- ggplot(plot.abundance, aes(year_fac, estimate__)) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(ymax=upper__, ymin=lower__), width = 0.4) +
-  coord_trans(y = "pseudo_log") +
-  scale_y_continuous(breaks = c(0,1,5,10,50,100,200,500)) +
-  theme(axis.title.x = element_blank()) +
-  labs(y = "Fish / set")
-
-abundance
-
 ## length------------------------------------
 ## read in data 
 cod.length.data <- read.csv("data/cod length data.csv", row.names = 1)
@@ -151,26 +129,6 @@ ppc_dens_overlay(y = y, yrep = yrep_cod_length_annual[sample(nrow(yrep_cod_lengt
   xlim(0, 500) +
   ggtitle("cod_length_annual")
 
-# plot
-## 95% CI
-cod_length_annual <- readRDS("./output/cod_length_annual.rds")
-ce1s_1 <- conditional_effects(cod_length_annual, effect = "year_fac", re_formula = NA,
-                              probs = c(0.025, 0.975))
-
-print(ce1s_1)
-
-# make a panel for the fig
-plot.length <- ce1s_1$year_fac
-
-# plot.dat$year <- as.numeric(as.character(plot.dat$year_fac))
-
-length <- ggplot(plot.length, aes(year_fac, estimate__)) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(ymax=upper__, ymin=lower__), width = 0.4) +
-  theme(axis.title.x = element_blank()) +
-  labs(y = "Length anomaly (mm)")
-
-length
 
 ## fit Kdry model --------------------------------------------
 ## Read in data
@@ -244,7 +202,6 @@ Kdry_formula2 <-  bf(Kdry ~ (julian) + (length) +  (year_fac) + (1 | bay_fac/sit
 get_prior(Kdry_formula2, Kdry.data)
 
 # set priors
-
 priors_Kdry2 <- c(set_prior("normal(0, 3)", class = "b"),
                  set_prior("normal(0, 3)", class = "Intercept"),
                  set_prior("student_t(3, 0, 2.5)", class = "sd"),
@@ -278,23 +235,7 @@ ppc_dens_overlay(y = y, yrep = yrep_cod_Kdry_annual2[sample(nrow(yrep_cod_Kdry_a
 
 # plot
 ## 95% CI
-cod_Kdry_annual <- readRDS("./output/cod_Kdry_annual2.rds")
-ce1s_1 <- conditional_effects(cod_Kdry_annual, effect = "year_fac", re_formula = NA,
-                              probs = c(0.025, 0.975))
-
-print(ce1s_1)
-
-# make a panel for the fig
-plot.Kdry <- ce1s_1$year_fac
-
-
-Kdry <- ggplot(plot.Kdry, aes(year_fac, estimate__)) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(ymax=upper__, ymin=lower__), width = 0.4) +
-  theme(axis.title.x = element_blank()) +
-  labs(y = "Kdry")
-
-Kdry
+cod_Kdry_annual2 <- readRDS("./output/cod_Kdry_annual2.rds")
 
 ## fit model to HSI -----------------------------------
 # limit to HSI data only
@@ -340,127 +281,6 @@ ppc_dens_overlay(y = y, yrep = yrep_cod_HSI_annual[sample(nrow(yrep_cod_HSI_annu
   xlim(0, 500) +
   ggtitle("cod_HSI_annual")
 
-# plot
-## 95% CI
-cod_HSI_annual <- readRDS("./output/cod_HSI_annual.rds")
-ce1s_1 <- conditional_effects(cod_HSI_annual, effect = "year_fac", re_formula = NA,
-                              probs = c(0.025, 0.975))
-
-print(ce1s_1)
-
-# make a panel for the fig
-plot.HSI <- ce1s_1$year_fac
-
-
-HSI <- ggplot(plot.HSI, aes(year_fac, estimate__)) +
-  geom_point(size = 2) +
-  geom_errorbar(aes(ymax=upper__, ymin=lower__), width = 0.4) +
-  theme(axis.title.x = element_blank()) +
-  labs(y = "HSI")
-
-HSI
-
-
-## combine into one-panel plot----------------
-
-# log-transform abundance results
-
-plot.abundance$log.est <- log(plot.abundance$estimate__, 10)
-plot.abundance$log.LCI <- log(plot.abundance$lower__, 10)
-plot.abundance$log.UCI <- log(plot.abundance$upper__, 10)
-
-# and scale results to plot
-sc.abundance <- plot.abundance %>%
-  mutate(estimate = (log.est - mean(plot.abundance$log.est))/sd(plot.abundance$log.est),
-         LCI = (log.LCI - mean(plot.abundance$log.est))/sd(plot.abundance$log.est),
-         UCI = (log.UCI - mean(plot.abundance$log.est))/sd(plot.abundance$log.est),
-         response = "abundance") %>%
-  select(year_fac, response, estimate, LCI, UCI)
-
-plot.abundance <- data.frame(year_fac = as.factor(2006:2020),
-                             response = "abundance")
-plot.abundance <- left_join(plot.abundance, sc.abundance)
-
-# clean up length estimates
-sc.length <- plot.length %>%
-  mutate(estimate = (estimate__ - mean(plot.length$estimate__))/sd(plot.length$estimate__),
-         LCI = (lower__ - mean(plot.length$estimate__))/sd(plot.length$estimate__),
-         UCI = (upper__ - mean(plot.length$estimate__))/sd(plot.length$estimate__),
-         response = "length") %>%
-  select(year_fac, response, estimate, LCI, UCI)
-
-
-plot.length <- data.frame(year_fac = as.factor(2006:2020),
-                          response = "length")
-plot.length <- left_join(plot.length, sc.length)
-
-# and Kdry
-
-sc.Kdry <- plot.Kdry %>%
-  mutate(estimate = (estimate__ - mean(plot.Kdry$estimate__))/sd(plot.Kdry$estimate__),
-         LCI = (lower__ - mean(plot.Kdry$estimate__))/sd(plot.Kdry$estimate__),
-         UCI = (upper__ - mean(plot.Kdry$estimate__))/sd(plot.Kdry$estimate__),
-         response = "Kdry") %>%
-  select(year_fac, response, estimate, LCI, UCI)
-
-
-plot.Kdry <- data.frame(year_fac = as.factor(2006:2020),
-                        response = "Kdry")
-plot.Kdry <- left_join(plot.Kdry, sc.Kdry)
-
-# and HSI
-
-sc.HSI <- plot.HSI %>%
-  mutate(estimate = (estimate__ - mean(plot.HSI$estimate__))/sd(plot.HSI$estimate__),
-         LCI = (lower__ - mean(plot.HSI$estimate__))/sd(plot.HSI$estimate__),
-         UCI = (upper__ - mean(plot.HSI$estimate__))/sd(plot.HSI$estimate__),
-         response = "HSI") %>%
-  select(year_fac, response, estimate, LCI, UCI)
-
-plot.HSI <- data.frame(year_fac = as.factor(2006:2020),
-                       response = "HSI")
-plot.HSI <- left_join(plot.HSI, sc.HSI)
-
-# combine
-
-plot.all <- rbind(plot.abundance,
-                  plot.length,
-                  plot.Kdry,
-                  plot.HSI)
-
-plot.all$order <- case_when(
-  plot.all$response == "abundance" ~ 1,
-  plot.all$response == "length" ~ 2,
-  plot.all$response == "Kdry" ~ 3,
-  plot.all$response == "HSI" ~ 4
-)
-
-plot.all$response <- reorder(plot.all$response, plot.all$order)
-
-plot.all$year <- as.numeric(as.character(plot.all$year_fac))
-
-ggplot(plot.all, aes(year, estimate, color = response)) +
-  geom_point() +
-  geom_line()
-
-# set palette
-cb <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-
-
-ggplot(plot.all, aes(year, estimate, fill = response)) +
-  geom_bar(stat = "identity", position = "dodge",
-           color = "black") +
-  scale_x_continuous(breaks = 2006:2020) +
-  geom_hline(yintercept = 0) +
-  ylab("Difference from mean (units of standard deviation)") +
-  theme(legend.title = element_blank(),
-        legend.position = c(0.2, 0.8),
-        legend.background = element_rect(color = "black"),
-        axis.title.x = element_blank()) +
-  scale_fill_manual(values = cb[c(2,4,6,8)])
-
-ggsave("./figs/time_series_anomaly_plot.png", width = 6.5, height = 4, units = 'in')
-
 
 ## four-panel figure in original units -----------------
 
@@ -474,7 +294,7 @@ plot.abundance <- ce1s_1$year_fac
 
 plot.abundance$year <- as.numeric(as.character(plot.abundance$year_fac))
 
-abundance.2 <- ggplot(plot.abundance, aes(year, estimate__)) +
+abundance <- ggplot(plot.abundance, aes(year, estimate__)) +
   geom_bar(stat = "identity", position = "dodge", fill = "grey80") +
   geom_errorbar(aes(ymax=upper__, ymin=lower__), width = 0.4) +
   coord_trans(y = "pseudo_log") +
@@ -483,7 +303,7 @@ abundance.2 <- ggplot(plot.abundance, aes(year, estimate__)) +
   labs(y = "Fish / set") +
   geom_hline(yintercept = mean(plot.abundance$estimate__), lty = 2)
 
-abundance.2
+abundance
 
 # length
 ce1s_1 <- conditional_effects(cod_length_annual, effect = "year_fac", re_formula = NA,
@@ -495,69 +315,71 @@ plot.length$year <- as.numeric(as.character(plot.length$year_fac))
 
 plot.length.2 <- data.frame(year = 2006:2020)
 
-plot.length.2 <- left_join(plot.length.2, plot.length)
+plot.length <- left_join(plot.length.2, plot.length)
 
 # add offset to get to actual units!
-plot.length.2$estimate__ <- plot.length.2$estimate__ + plot.length.2$length
-plot.length.2$lower__ <- plot.length.2$lower__ + plot.length.2$length
-plot.length.2$upper__ <- plot.length.2$upper__ + plot.length.2$length
+plot.length$estimate__ <- plot.length$estimate__ + plot.length$length
+plot.length$lower__ <- plot.length$lower__ + plot.length$length
+plot.length$upper__ <- plot.length$upper__ + plot.length$length
 
 
-length.2 <- ggplot(plot.length.2, aes(year, estimate__)) +
+length <- ggplot(plot.length, aes(year, estimate__)) +
   geom_bar(stat = "identity", position = "dodge", fill = "grey80") +
   geom_errorbar(aes(ymax=upper__, ymin=lower__), width = 0.4) +
   theme(axis.title.x = element_blank()) +
   labs(y = "Length (mm)") +
-  geom_hline(yintercept = mean(plot.length.2$estimate__, na.rm = T), lty = 2) +
+  geom_hline(yintercept = mean(plot.length$estimate__, na.rm = T), lty = 2) +
   coord_cartesian(ylim = c(40,85))
 
-length.2
+length
 
 # Kdry
 
-ce1s_1 <- conditional_effects(cod_Kdry_annual, effect = "year_fac", re_formula = NA,
+ce1s_1 <- conditional_effects(cod_Kdry_annual2, effect = "year_fac", re_formula = NA,
                               probs = c(0.025, 0.975))
 
-plot.Kdry.2 <- ce1s_1$year_fac
+plot.Kdry <- ce1s_1$year_fac
 
-Kdry.2 <- ggplot(plot.Kdry.2, aes(year_fac, estimate__)) +
+Kdry <- ggplot(plot.Kdry, aes(year_fac, estimate__)) +
   geom_bar(stat = "identity", position = "dodge", fill = "grey80") +
   geom_errorbar(aes(ymax=upper__, ymin=lower__), width = 0.4) +
   theme(axis.title.x = element_blank()) +
   labs(y = "Kdry") +
-  coord_cartesian(ylim = c(1.1, 1.28))
+  coord_cartesian(ylim = c(1.14, 1.26))
 
-Kdry.2
+Kdry
 
 # HSI
 
 ce1s_1 <- conditional_effects(cod_HSI_annual, effect = "year_fac", re_formula = NA,
                               probs = c(0.025, 0.975))
 
-plot.HSI.2 <- ce1s_1$year_fac
+plot.HSI <- ce1s_1$year_fac
 
-HSI.2 <- ggplot(plot.HSI.2, aes(year_fac, estimate__)) +
+HSI <- ggplot(plot.HSI, aes(year_fac, estimate__)) +
   geom_bar(stat = "identity", position = "dodge", fill = "grey80") +
   geom_errorbar(aes(ymax=upper__, ymin=lower__), width = 0.4) +
   theme(axis.title.x = element_blank()) +
   labs(y = "HSI") +
   coord_cartesian(ylim = c(3, 7))
 
-HSI.2
+HSI
 
 # now combine into one plot
 library(ggpubr)
 
-png("./figs/four_panel_annual_data.png", 5, 8, units = 'in', res = 300)
-ggarrange(abundance.2,
-                  length.2,
-                  ggarrange(Kdry.2,
-                             HSI.2,
+png("./figs/Fig2_four_panel_annual_data.png", 5, 8, units = 'in', res = 300)
+          plot <- ggarrange(abundance,
+                  length,
+                  ggarrange(Kdry,
+                             HSI,
                              nrow = 1,
                              ncol = 2,
                              labels = c("c", "d")),
           nrow = 3,
           ncol = 1,
-          labels = c("a", "b", ""))
+          labels = c("a", "b", "")) 
+          
+          annotate_figure(plot, bottom = text_grob("      Year"))
 
 dev.off()

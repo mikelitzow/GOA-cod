@@ -242,7 +242,6 @@ mod.95$long <- order$lon[match(mod.95$bay_fac, order$Bay)]
 mod.95$bay_fac <- reorder(mod.95$bay_fac, desc(mod.95$long))
 
 
-
 theme_set(theme_bw())
 
 g4 <- ggplot(mod.95) +
@@ -293,7 +292,7 @@ dev.off()
 
 
 png("./figs/Fig3_combined_predicted_abundance_cod3s_sg_zinb_k3.png", 8, 6, units='in', res=300)
-ggpubr::ggarrange(g1, g3, g2, g4, ncol=2, nrow=2, labels=c("a)", "b)", "c)", "d)"))
+ggpubr::ggarrange(g1, g3, g2, g4, ncol=2, nrow=2, labels=c("a", "b", "c", "d"))
 dev.off()
 
 ## add scatter plot for SI -------------------------------
@@ -359,7 +358,7 @@ g4 <- ggplot(SI.dat) +
 print(g4)
 
 png("./figs/SI_abundance_scatter_plots.png", 8, 6, units='in', res=300)
-ggpubr::ggarrange(g1, g3, g2, g4, ncol=2, nrow=2, labels=c("a)", "b)", "c)", "d)"))
+ggpubr::ggarrange(g1, g3, g2, g4, ncol=2, nrow=2, labels=c("a", "b", "c", "d"))
 dev.off()
 
 

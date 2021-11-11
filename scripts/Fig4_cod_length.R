@@ -198,7 +198,7 @@ cod_length <- brm(length_formula,
                  save_pars = save_pars(all = TRUE),
                  control = list(adapt_delta = 0.9, max_treedepth = 10))
 cod_length  <- add_criterion(cod_length, "bayes_R2", moment_match = TRUE)
-saveRDS(cod_length, file = "output/cod_len.rds")
+saveRDS(cod_length, file = "output/cod_length.rds")
 
 cod_length <- readRDS("./output/cod_length.rds")
 check_hmc_diagnostics(cod_length$fit)
@@ -275,7 +275,7 @@ g <- ggplot(dat_ce) +
 print(g)
 ggsave("./figs/residual.cpue_predicted_effect_cod_length.png", width = 5, height = 4)
 
-## predict length by day for Julian day (model 2) ---------------
+## predict length by day for Julian day ---------------
 
 ## 95% CI
 ce1s_1 <- conditional_effects(cod_length, effect = "julian", re_formula = NA,
@@ -304,7 +304,7 @@ g <- ggplot(dat_ce) +
   scale_x_continuous(breaks = seq(190, 240, 10)) +
   theme_bw()
 print(g)
-ggsave("./figs/predicted_length_DOY_cod_lengths.png", width = 5, height = 3.5)
+ggsave("./figs/Fig4_predicted_length_DOY_cod_lengths.png", width = 5, height = 3.5)
 
 ## summarize "linear phase" growth rate for ms.
 
@@ -312,4 +312,4 @@ linear_growth <- dat_ce %>%
   filter((julian >= 205)  & (julian <= 225))
 
 mod <- lm(estimate__ ~ julian, data = linear_growth)
-summary(mod) # ~ 0.78 mm/day
+summary(mod) # ~ 0.81 mm/day

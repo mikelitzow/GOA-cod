@@ -319,9 +319,7 @@ g <- ggplot(cod.length.data) +
   aes(julian, length) +
   geom_point(size = 1, alpha = 0.5) +
   labs(x = "Day of year", y = "Total length (mm)") +
-  theme_bw() +
-  coord_trans(y = "pseudo_log") +
-  scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 500, 2000), minor_breaks = NULL)
+  theme_bw()
 
 print(g)
 ggsave("./figs/SI_raw_length_DOY.png", width = 5, height = 3.5)

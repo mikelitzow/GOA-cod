@@ -12,20 +12,59 @@ source("./scripts/stan_utils.R")
 theme_set(theme_bw())
 
 ## annual abundance --------------------------
-## this is the best model from the fish-FAR project
+## using the best model from the fish-FAR project
 
-# this is the formula, for reference
+## Read in data --------------------------------------------
+cod.data <- read.csv("data/cpue.data.csv", row.names = 1)
+cod.data$cod <- cod.data$cod.age.0
+cod.data$bay_fac <- as.factor(cod.data$bay)
+cod.data$year_fac <- as.factor(cod.data$year)
+cod.data$site_fac <- as.factor(cod.data$site)
+
+## fit: zero-inflated --------------------------------------
+
+# set the formula
 recr_2_formula <-  bf(cod ~ s(julian, k = 3) + (1 | bay_fac/site_fac) + (year_fac),
                       zi ~ s(julian, k = 3) + (1 | bay_fac/site_fac) + (year_fac))
 
-# load the model object
-recr_2_zinb <- readRDS("./output/recr_2_zinb.rds")
 
+## Set model distributions
+zinb <- zero_inflated_negbinomial(link = "log", link_shape = "log", link_zi = "logit")
+
+## Set priors
+recr_2_priors_zinb <- c(set_prior("normal(0, 3)", class = "b"),
+                        set_prior("normal(0, 3)", class = "Intercept"),
+                        set_prior("student_t(3, 0, 3)", class = "sds"),
+                        set_prior("gamma(0.01, 0.01)", class = "shape"),
+                        set_prior("normal(0, 3)", class = "b", dpar = "zi"),
+                        set_prior("logistic(0, 1)", class = "Intercept", dpar = "zi"),
+                        set_prior("student_t(3, 0, 3)", class = "sds", dpar = "zi"))
+
+
+## model 3 for post-settlement paper
+recr_2_zinb <- brm(recr_2_formula,
+                        data = cod.data,
+                        prior = recr_2_priors_zinb,
+                        family = zinb,
+                        cores = 4, chains = 4, iter = 3000,
+                        save_pars = save_pars(all = TRUE),
+                        control = list(adapt_delta = 0.999, max_treedepth = 12))
+saveRDS(recr_2_zinb, file = "output/recr_2_zinb.rds")
+
+recr_2_zinb  <- add_criterion(recr_2_zinb, "bayes_R2")
+saveRDS(recr_2_zinb, file = "output/recr_2_zinb.rds")
+
+recr_2_zinb <- readRDS("./output/recr_2_zinb.rds")
 check_hmc_diagnostics(recr_2_zinb$fit)
 neff_lowest(recr_2_zinb$fit)
 rhat_highest(recr_2_zinb$fit)
 summary(recr_2_zinb)
 bayes_R2(recr_2_zinb)
+plot(conditional_smooths(recr_2_zinb), ask = FALSE)
+pdf("./figs/trace_recr_2_zinb.pdf", width = 6, height = 4)
+trace_plot(recr_2_zinb$fit)
+dev.off()
+
 
 ## year predictions ##
 
@@ -343,9 +382,6 @@ plot.abundance <- data.frame(year_fac = as.factor(2006:2020),
 plot.abundance <- left_join(plot.abundance, sc.abundance)
 
 # clean up length estimates
-# (not sure why there is a constant length in these results, will have to ask Mike Malick!)
-# won't matter for this plot as I'm scaling results
-
 sc.length <- plot.length %>%
   mutate(estimate = (estimate__ - mean(plot.length$estimate__))/sd(plot.length$estimate__),
          LCI = (lower__ - mean(plot.length$estimate__))/sd(plot.length$estimate__),
@@ -426,7 +462,7 @@ ggplot(plot.all, aes(year, estimate, fill = response)) +
 ggsave("./figs/time_series_anomaly_plot.png", width = 6.5, height = 4, units = 'in')
 
 
-## can also do a four-panel figure in original units -----------------
+## four-panel figure in original units -----------------
 
 # re-organize all for outputs
 

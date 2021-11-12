@@ -1,5 +1,7 @@
 ## Cod condition - evaluate results 
 ## Use best model to predict condition for each year / bay combination (for 2018-2020)
+## This was used as a diagnostic step to assess modeled results
+
 
 library(plyr)
 library(mgcv)

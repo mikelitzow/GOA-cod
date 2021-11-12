@@ -271,8 +271,6 @@ g1 <- ggplot(dat_ce) +
   coord_cartesian(ylim = c(-1.1, 0.65))
 print(g1)
 
-ggsave("./figs/sst_predicted_effect_cod_cond2.png", width = 5, height = 4)
-
 
 ## 95% CI
 ce1s_1 <- conditional_effects(cod_cond2, effect = "fourth.root.cpue", re_formula = NA,
@@ -302,7 +300,6 @@ g2 <- ggplot(dat_ce) +
   theme_bw()
 
 print(g2)
-ggsave("./figs/fourth_root_cpue_predicted_effect_cod_cond2.png", width = 5, height = 4)
 
 ## and predict bay value!
 ce1s_1 <- conditional_effects(cod_cond2, effect = "bay_fac", probs = c(0.025, 0.975))
@@ -334,18 +331,13 @@ g3 <- ggplot(mod.95) +
   aes(x = bay, y = estimate__) +
   geom_errorbar(aes(ymin = ymin.95, ymax = ymax.95), width = 0.5) +
   geom_point(size = 3) +
-  theme(axis.title.x = element_blank(), axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
+  theme(axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
   ylab("Kdry (anomaly)") +
   xlab("Bay") +
   coord_cartesian(ylim = c(-1.1, 0.65)) 
 
 print(g3)
 
-png("figs/Kdry_summer_temp.png", 10.5, 3, units='in', res=300)
-ggpubr::ggarrange(g1, g2, g3,
-          ncol = 3, labels = c("a", "b", "c"),
-          widths = c(1,1,1.2))
-dev.off()
 
 ## add scatter plot for SI -------------------------------
 
@@ -358,22 +350,22 @@ SI.dat$bay[change] <- "Cook"
 SI.dat$jitter.Kdry <- jitter(SI.dat$Kdry, factor = 2)
 SI.dat$jitter.fit.temp.mu <- jitter(SI.dat$fit.temp.mu, factor = 40)
 
-g1 <- ggplot(SI.dat, aes(jitter.fit.temp.mu, jitter.Kdry)) +
+SI.g1 <- ggplot(SI.dat, aes(jitter.fit.temp.mu, jitter.Kdry)) +
   geom_point(size = 1, alpha = 0.5) +
-  labs(x = "Summer temperature (ºC)", y = "Total length (mm)") +
+  labs(x = "Summer temperature (ºC)", y = "Kdry") +
   theme_bw() 
 
-g1
+SI.g1
 
 SI.dat$jitter.fourth.root.cpue <- jitter(SI.dat$fourth.root.cpue, factor = 10)
 
-g2 <- ggplot(SI.dat) +
+SI.g2 <- ggplot(SI.dat) +
   aes(jitter.fourth.root.cpue, jitter.Kdry) +
   geom_point(size = 1, alpha = 0.5) +
   labs(x = "Fourth root CPUE", y = "Kdry") +
   theme_bw() 
 
-print(g2)
+print(SI.g2)
 
 # set the bays to plot west - east
 order <- read.csv("./data/bay_lat_long.csv")
@@ -384,20 +376,16 @@ SI.dat$bay <- reorder(SI.dat$bay, desc(SI.dat$long))
 SI.dat$bay.number <- as.numeric(SI.dat$bay)
 SI.dat$jitter.bay <- jitter(SI.dat$bay.number, factor = 1)
 
-g3 <- ggplot(SI.dat) +
+SI.g3 <- ggplot(SI.dat) +
   aes(jitter.bay, jitter.Kdry) +
   geom_point(size = 1, alpha = 0.5) +
   theme(axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
-  coord_trans(y = "pseudo_log") +
   scale_x_continuous(breaks=c(1:14), minor_breaks = NULL, labels = levels(SI.dat$bay)) +
   ylab("Kdry") +
   xlab("Bay")
 
-print(g3)
+print(SI.g3)
 
-png("./figs/SI_Kdry_scatter_plots.png", 10.5, 3, units='in', res=300)
-ggpubr::ggarrange(g1, g2, g3, ncol=3, nrow=1, labels=c("a", "b", "c"))
-dev.off()
 
 ## HSI---------------------
 
@@ -645,18 +633,16 @@ dat_ce[["lower_90"]] <- ce1s_2$fit.temp.mu[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$fit.temp.mu[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$fit.temp.mu[["lower__"]]
 
-g1 <- ggplot(dat_ce) +
+g4 <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
   geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1.5, color = "red3") +
-  labs(x = "ºC", y = "HSI.dry_stnd") +
+  labs(x = "Summer temperature (ºC)", y = "HSI (anomaly)") +
   theme_bw() +
-  coord_cartesian(ylim = c(0,9))
-print(g1)
-
-ggsave("./figs/sst_predicted_effect_cod_HSI2.png", width = 5, height = 4)
+  coord_cartesian(ylim = c(-2,1.5))
+print(g4)
 
 
 ## 95% CI
@@ -676,17 +662,16 @@ dat_ce[["lower_90"]] <- ce1s_2$fourth.root.cpue[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$fourth.root.cpue[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$fourth.root.cpue[["lower__"]]
 
-g2 <- ggplot(dat_ce) +
+g5 <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
   geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1.5, color = "red3") +
-  labs(x = "Fourth root CPUE", y = "HSI.dry_stnd") +
-  coord_cartesian(ylim = c(0,9)) +
+  labs(x = "Fourth root CPUE", y = "HSI (anomaly)") +
+  coord_cartesian(ylim = c(-2,1.5)) +
   theme_bw()
-print(g2)
-ggsave("./figs/fourth_root_cpue_predicted_effect_cod_HSI2.png", width = 5, height = 4)
+print(g5)
 
 ## and predict bay value!
 ce1s_1 <- conditional_effects(cod_HSI2, effect = "bay_fac", probs = c(0.025, 0.975))
@@ -698,34 +683,97 @@ names(mod.95)[3:4] <- c("ymin.95", "ymax.95")
 order <- read.csv("./data/bay_lat_long.csv")
 
 # remove "Bay" from first two bay names
-order$Bay[1:2] <- c("Anton Larson", "Cook")
+order$Bay[1:2] <- c("Anton Larsen", "Cook")
 
 mod.95$bay_fac <- as.character(mod.95$bay_fac)
 change <- grep("Anton", mod.95$bay_fac)
-mod.95$bay_fac[change] <- "Anton Larson"
+mod.95$bay_fac[change] <- "Anton Larsen"
 
 change <- grep("Cook", mod.95$bay_fac)
 mod.95$bay_fac[change] <- "Cook"
-
 
 mod.95$long <- order$lon[match(mod.95$bay_fac, order$Bay)]
 mod.95$bay_fac <- reorder(mod.95$bay_fac, desc(mod.95$long))
 
 theme_set(theme_bw())
 
-g3 <- ggplot(mod.95) +
+g6 <- ggplot(mod.95) +
   aes(x = bay_fac, y = estimate__) +
   geom_errorbar(aes(ymin = ymin.95, ymax = ymax.95), width = 0.5) +
   geom_point(size = 3) +
-  theme(axis.title.x = element_blank(), axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
-  ylab("HSI.dry_stnd") +
-  coord_cartesian(ylim = c(0,9)) 
+  theme(axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
+  ylab("HSI (anomaly)") +
+  xlab("Bay") +
+  coord_cartesian(ylim = c(-2,1.5)) 
 
+print(g6)
 
-print(g3)
-
-png("figs/HSIdry_summer_temp.png", 10.5, 3, units='in', res=300)
+png("figs/Fig6_cod_condition.png", 10.5, 6.5, units='in', res=300)
 ggpubr::ggarrange(g1, g2, g3,
+                  g4, g5, g6,
                   ncol = 3,
-                  widths = c(1,1,1.2))
+                  nrow = 2,
+                  widths = c(1,1,1.2),
+                  labels = "auto")
+dev.off()
+
+## add scatter plot for SI -------------------------------
+
+SI.dat <- cod.condition.data
+
+# fix Anton and Cook
+change <- grep("Cook", SI.dat$bay)
+SI.dat$bay[change] <- "Cook"
+
+SI.dat$jitter.HSI <- jitter(SI.dat$HSI.dry, factor = 2)
+SI.dat$jitter.fit.temp.mu <- jitter(SI.dat$fit.temp.mu, factor = 30)
+
+SI.g4 <- ggplot(SI.dat, aes(jitter.fit.temp.mu, jitter.HSI)) +
+  geom_point(size = 1, alpha = 0.5) +
+  labs(x = "Summer temperature (ºC)", y = "HSI") + 
+# excluding 2 outliers from plot (used in analysis!)
+# so plot illustrates majority of distribution!
+  coord_cartesian(ylim = c(0,16)) +
+  theme_bw() 
+
+SI.g4
+
+SI.dat$jitter.fourth.root.cpue <- jitter(SI.dat$fourth.root.cpue, factor = 10)
+
+SI.g5 <- ggplot(SI.dat) +
+  aes(jitter.fourth.root.cpue, jitter.HSI) +
+  geom_point(size = 1, alpha = 0.5) +
+  labs(x = "Fourth root CPUE", y = "HSI") +
+  coord_cartesian(ylim = c(0,16)) +
+  theme_bw() 
+
+print(SI.g5)
+
+# set the bays to plot west - east
+order <- read.csv("./data/bay_lat_long.csv")
+order$Bay[1:2] <- c("Anton Larsen", "Cook")
+
+SI.dat$long <- order$lon[match(SI.dat$bay, order$Bay)]
+SI.dat$bay <- reorder(SI.dat$bay, desc(SI.dat$long))
+SI.dat$bay.number <- as.numeric(SI.dat$bay)
+SI.dat$jitter.bay <- jitter(SI.dat$bay.number, factor = 1)
+
+SI.g6 <- ggplot(SI.dat) +
+  aes(jitter.bay, jitter.HSI) +
+  geom_point(size = 1, alpha = 0.5) +
+  theme(axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
+  scale_x_continuous(breaks=c(1:14), minor_breaks = NULL, labels = levels(SI.dat$bay)) +
+  ylab("HSI") +
+  xlab("Bay") +
+  coord_cartesian(ylim = c(0,16))
+
+print(SI.g6)
+
+png("figs/SI_cod_condition.png", 10.5, 6.5, units='in', res=300)
+ggpubr::ggarrange(SI.g1, SI.g2, SI.g3,
+                  SI.g4, SI.g5, SI.g6,
+                  ncol = 3,
+                  nrow = 2,
+                  widths = c(1,1,1.2),
+                  labels = "auto")
 dev.off()

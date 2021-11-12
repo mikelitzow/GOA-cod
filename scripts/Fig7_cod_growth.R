@@ -97,14 +97,10 @@ ggplot(filter(cod.length.data, length %in% 10:149), aes(length)) +
   theme_bw() +
   ggtitle("All length data")
 
-ggsave("./figs/length_data_histogram.png", width = 6, height = 4, units = 'in')
-
 ggplot(growth.data, aes(length)) +
   geom_histogram(fill="grey", color="black", bins=40) +
   theme_bw() +
   ggtitle("Growth data (sites w/ > 1 visit)")
-
-ggsave("./figs/growth_data_histogram.png", width = 6, height = 4, units = 'in')
 
 
 tab <- table(growth.data$length)
@@ -186,8 +182,6 @@ ggplot(growth.data, aes(fit.temp.mu, mean.cpue.4)) +
   labs(x = "Summer temp", y = "Mean cpue^0.25") +
   theme_bw()
 
-ggsave("./figs/growth_data_temp_vs_cpue.png", width=6, height=4, units='in')
-
 # Julian first and delta.date are highly colinear! include only Julian date
 
 ## mgcv fits -----------------------------------------------
@@ -230,6 +224,9 @@ growth1_formula <-  bf(growth.rate_stnd ~ s(julian.first, k = 4) + s(fit.temp.mu
 
 growth2_formula <-  bf(growth.rate_stnd ~ s(julian.first, k = 4) + s(fit.temp.mu, k = 4) + s(mean.cpue.4, k = 4) + bay_fac)
 
+growth2s_formula <-  bf(growth.rate_stnd ~ s(julian.first, k = 4) + s(fit.temp.mu, k = 4) + s(mean.cpue.4, k = 4) + 
+                          (1 | bay_fac/site_fac))
+
 growth3_formula <-  bf(growth.rate_stnd ~ s(fit.temp.mu, k = 4) + s(mean.cpue.4, k = 4) + bay_fac)
 
 growth4_formula <-  bf(growth.rate_stnd ~ s(mean.cpue.4, k = 4) + bay_fac)
@@ -243,10 +240,10 @@ get_prior(growth0_formula, growth.data)
 
 ## fit: brms --------------------------------------
 cod_growth0 <- brm(growth0_formula,
-                data = growth.data,
-                cores = 4, chains = 4, iter = 4000,
-                save_pars = save_pars(all = TRUE),
-                control = list(adapt_delta = 0.999, max_treedepth = 16))
+                   data = growth.data,
+                   cores = 4, chains = 4, iter = 4000,
+                   save_pars = save_pars(all = TRUE),
+                   control = list(adapt_delta = 0.999, max_treedepth = 16))
 cod_growth0  <- add_criterion(cod_growth0, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(cod_growth0, file = "output/cod_growth0.rds")
 
@@ -292,7 +289,7 @@ cod_growth2 <- brm(growth2_formula,
                    data = growth.data,
                    cores = 4, chains = 4, iter = 4000,
                    save_pars = save_pars(all = TRUE),
-                   control = list(adapt_delta = 0.999, max_treedepth = 16))
+                   control = list(adapt_delta = 0.99, max_treedepth = 16))
 cod_growth2  <- add_criterion(cod_growth2, c("loo", "bayes_R2"), moment_match = TRUE)
 saveRDS(cod_growth2, file = "output/cod_growth2.rds")
 
@@ -310,6 +307,28 @@ ppc_dens_overlay(y = y, yrep = yrep_cod_growth2[sample(nrow(yrep_cod_growth2), 2
   xlim(0, 500) +
   ggtitle("cod_growth2")
 
+
+cod_growth2s <- brm(growth2s_formula,
+                    data = growth.data,
+                    cores = 4, chains = 4, iter = 3000,
+                    save_pars = save_pars(all = TRUE),
+                    control = list(adapt_delta = 0.999, max_treedepth = 16))
+cod_growth2s  <- add_criterion(cod_growth2s, c("loo", "bayes_R2"), moment_match = TRUE)
+saveRDS(cod_growth2s, file = "output/cod_growth2s.rds")
+
+cod_growth2s <- readRDS("./output/cod_growth2s.rds")
+check_hmc_diagnostics(cod_growth2s$fit)
+neff_lowest(cod_growth2s$fit)
+rhat_highest(cod_growth2s$fit)
+summary(cod_growth2s)
+bayes_R2(cod_growth2s)
+plot(cod_growth2s$criteria$loo, "k")
+plot(conditional_smooths(cod_growth2s), ask = FALSE)
+y <- growth.data$growth.rate_stnd
+yrep_cod_growth2s  <- fitted(cod_growth2s, scale = "response", summary = FALSE)
+ppc_dens_overlay(y = y, yrep = yrep_cod_growth2s[sample(nrow(yrep_cod_growth2s), 25), ]) +
+  xlim(0, 500) +
+  ggtitle("cod_growth2s")
 
 cod_growth3 <- brm(growth3_formula,
                    data = growth.data,
@@ -389,7 +408,8 @@ cod_growth3 <- readRDS("./output/cod_growth3.rds")
 cod_growth4 <- readRDS("./output/cod_growth4.rds")
 cod_growth5 <- readRDS("./output/cod_growth5.rds")
 
-model.comp <- loo(cod_growth0, cod_growth1, cod_growth2, cod_growth2s, cod_growth3, cod_growth4, cod_growth5)
+model.comp <- loo(cod_growth0, cod_growth1, cod_growth2, cod_growth2s,
+                  cod_growth3, cod_growth4, cod_growth5)
 model.comp
 
 # save model comparison for ms.
@@ -404,97 +424,6 @@ forms <- data.frame(formula=c(as.character(growth2s_formula)[1],
 comp.out <- cbind(forms, model.comp$diffs[,1:2])
 write.csv(comp.out, "./output/growth_model_comp.csv")
 
-## temp predictions ##
-
-## 95% CI
-ce1s_1 <- conditional_effects(cod_growth2, effect = "fit.temp.mu", re_formula = NA,
-                              probs = c(0.025, 0.975))
-## 90% CI
-ce1s_2 <- conditional_effects(cod_growth2, effect = "fit.temp.mu", re_formula = NA,
-                              probs = c(0.05, 0.95))
-## 80% CI
-ce1s_3 <- conditional_effects(cod_growth2, effect = "fit.temp.mu", re_formula = NA,
-                              probs = c(0.1, 0.9))
-dat_ce <- ce1s_1$fit.temp.mu
-dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
-dat_ce[["lower_95"]] <- dat_ce[["lower__"]]
-dat_ce[["upper_90"]] <- ce1s_2$fit.temp.mu[["upper__"]]
-dat_ce[["lower_90"]] <- ce1s_2$fit.temp.mu[["lower__"]]
-dat_ce[["upper_80"]] <- ce1s_3$fit.temp.mu[["upper__"]]
-dat_ce[["lower_80"]] <- ce1s_3$fit.temp.mu[["lower__"]]
-dat_ce[["rug.anom"]] <- c(unique(cod.length.data$fit.temp.mu), rep(NA, 100-length(unique(cod.length.data$fit.temp.mu))))
-
-g1 <- ggplot(dat_ce) +
-  aes(x = effect1__, y = estimate__) +
-  geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
-  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
-  geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
-  geom_line(size = 1, color = "red3") +
-  labs(x = "Summer temperature", y = "Growth (mm/d)") +
-  theme_bw() 
-
-print(g1)
-
-
-## mean.cpue.4 predicted effect
-## 95% CI
-ce1s_1 <- conditional_effects(cod_growth2, effect = "mean.cpue.4", re_formula = NA,
-                              probs = c(0.025, 0.975))
-## 90% CI
-ce1s_2 <- conditional_effects(cod_growth2, effect = "mean.cpue.4", re_formula = NA,
-                              probs = c(0.05, 0.95))
-## 80% CI
-ce1s_3 <- conditional_effects(cod_growth2, effect = "mean.cpue.4", re_formula = NA,
-                              probs = c(0.1, 0.9))
-dat_ce <- ce1s_1$mean.cpue.4
-dat_ce[["upper_95"]] <- dat_ce[["upper__"]]
-dat_ce[["lower_95"]] <- dat_ce[["lower__"]]
-dat_ce[["upper_90"]] <- ce1s_2$mean.cpue.4[["upper__"]]
-dat_ce[["lower_90"]] <- ce1s_2$mean.cpue.4[["lower__"]]
-dat_ce[["upper_80"]] <- ce1s_3$mean.cpue.4[["upper__"]]
-dat_ce[["lower_80"]] <- ce1s_3$mean.cpue.4[["lower__"]]
-dat_ce[["rug.anom"]] <- c(unique(cod.length.data$mean.cpue.4), rep(NA, 100-length(unique(cod.length.data$mean.cpue.4))))
-
-g2 <- ggplot(dat_ce) +
-  aes(x = effect1__, y = estimate__) +
-  geom_ribbon(aes(ymin = lower_95, ymax = upper_95), fill = "grey90") +
-  geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
-  geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
-  geom_line(size = 1, color = "red3") +
-  labs(x = "CPUE^0.25", y = "Growth (mm/d)") +
-  theme_bw()
-
-print(g2)
-
-## and predict bay value!
-ce1s_1 <- conditional_effects(cod_growth2, effect = "bay_fac", probs = c(0.025, 0.975))
-mod.95 <- ce1s_1$bay_fac %>%
-  select(bay_fac, estimate__, lower__, upper__)
-names(mod.95)[3:4] <- c("ymin.95", "ymax.95")
-
-# set the bays to plot west - east
-order <- read.csv("./data/bay_lat_long.csv")
-mod.95$long <- order$lon[match(mod.95$bay_fac, order$Bay)]
-mod.95$bay_fac <- reorder(mod.95$bay_fac, desc(mod.95$long))
-
-theme_set(theme_bw())
-
-g3 <- ggplot(mod.95) +
-  aes(x = bay_fac, y = estimate__) +
-  geom_errorbar(aes(ymin = ymin.95, ymax = ymax.95), width = 0.5) +
-  geom_point(size = 3) +
-  theme(axis.title.x = element_blank(), axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
-  ylab("Growth (mm/d)") 
-
-print(g3)
-
-png("figs/cod_growth_2.png", 10.5, 3, units='in', res=300)
-ggpubr::ggarrange(g1, g2, g3,
-                  ncol = 3,
-                  widths = c(1,1,1.2))
-dev.off()
-
-## model 2s for comparison
 ## temp predictions ##
 
 ## 95% CI
@@ -521,7 +450,7 @@ g1 <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
-  labs(x = "Summer temperature", y = "Growth (mm/d)") +
+  labs(x = "ÂºC", y = "Growth") +
   theme_bw() 
 
 print(g1)
@@ -552,14 +481,13 @@ g2 <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
-  labs(x = "CPUE^0.25", y = "Growth (mm/d)") +
+  labs(x = "Fourth root CPUE", y = "Growth") +
   theme_bw()
 
 print(g2)
 
 
-
-png("figs/cod_growth_2s.png", 7, 3, units='in', res=300)
+png("figs/cod_growth_2s_temp_cpue.png", 7, 3, units='in', res=300)
 ggpubr::ggarrange(g1, g2,
                   ncol = 2)
 dev.off()

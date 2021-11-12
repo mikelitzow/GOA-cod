@@ -266,7 +266,7 @@ g1 <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1.5, color = "red3") +
-  labs(x = "ºC", y = "Kdry") +
+  labs(x = "Summer temperature (ºC)", y = "Kdry (anomaly)") +
   theme_bw() +
   coord_cartesian(ylim = c(-1.1, 0.65))
 print(g1)
@@ -297,7 +297,7 @@ g2 <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1.5, color = "red3") +
-  labs(x = "Fourth root CPUE", y = "Kdry") +
+  labs(x = "Fourth root CPUE", y = "Kdry (anomaly)") +
   coord_cartesian(ylim = c(-1.1, 0.65)) +
   theme_bw()
 
@@ -312,24 +312,90 @@ names(mod.95)[3:4] <- c("ymin.95", "ymax.95")
 
 # set the bays to plot west - east
 order <- read.csv("./data/bay_lat_long.csv")
+
+# fix names
+order$Bay[1:2] <- c("Anton Larsen", "Cook")
+
+mod.95$bay_fac <- as.character(mod.95$bay_fac)
+
+change <- grep("Cook", mod.95$bay_fac)
+mod.95$bay_fac[change] <- "Cook"
+mod.95$bay_fac <- as.factor(mod.95$bay_fac)
+
+mod.95$long <- order$lon[match(mod.95$bay, order$Bay)]
+mod.95$bay <- reorder(mod.95$bay, desc(mod.95$long))
+
 mod.95$long <- order$lon[match(mod.95$bay_fac, order$Bay)]
 mod.95$bay_fac <- reorder(mod.95$bay_fac, desc(mod.95$long))
 
 theme_set(theme_bw())
 
 g3 <- ggplot(mod.95) +
-  aes(x = bay_fac, y = estimate__) +
+  aes(x = bay, y = estimate__) +
   geom_errorbar(aes(ymin = ymin.95, ymax = ymax.95), width = 0.5) +
   geom_point(size = 3) +
   theme(axis.title.x = element_blank(), axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
-  ylab("Kdry") +
+  ylab("Kdry (anomaly)") +
+  xlab("Bay") +
   coord_cartesian(ylim = c(-1.1, 0.65)) 
-
 
 print(g3)
 
 png("figs/Kdry_summer_temp.png", 10.5, 3, units='in', res=300)
 ggpubr::ggarrange(g1, g2, g3,
-          ncol = 3,
+          ncol = 3, labels = c("a", "b", "c"),
           widths = c(1,1,1.2))
 dev.off()
+
+## add scatter plot for SI -------------------------------
+
+SI.dat <- cod.condition.data
+
+# fix Anton and Cook
+change <- grep("Cook", SI.dat$bay)
+SI.dat$bay[change] <- "Cook"
+
+SI.dat$jitter.Kdry <- jitter(SI.dat$Kdry, factor = 2)
+SI.dat$jitter.fit.temp.mu <- jitter(SI.dat$fit.temp.mu, factor = 40)
+
+g1 <- ggplot(SI.dat, aes(jitter.fit.temp.mu, jitter.Kdry)) +
+  geom_point(size = 1, alpha = 0.5) +
+  labs(x = "Summer temperature (ºC)", y = "Total length (mm)") +
+  theme_bw() 
+
+g1
+
+SI.dat$jitter.fourth.root.cpue <- jitter(SI.dat$fourth.root.cpue, factor = 10)
+
+g2 <- ggplot(SI.dat) +
+  aes(jitter.fourth.root.cpue, jitter.Kdry) +
+  geom_point(size = 1, alpha = 0.5) +
+  labs(x = "Fourth root CPUE", y = "Kdry") +
+  theme_bw() 
+
+print(g2)
+
+# set the bays to plot west - east
+order <- read.csv("./data/bay_lat_long.csv")
+order$Bay[1:2] <- c("Anton Larsen", "Cook")
+
+SI.dat$long <- order$lon[match(SI.dat$bay, order$Bay)]
+SI.dat$bay <- reorder(SI.dat$bay, desc(SI.dat$long))
+SI.dat$bay.number <- as.numeric(SI.dat$bay)
+SI.dat$jitter.bay <- jitter(SI.dat$bay.number, factor = 1)
+
+g3 <- ggplot(SI.dat) +
+  aes(jitter.bay, jitter.Kdry) +
+  geom_point(size = 1, alpha = 0.5) +
+  theme(axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
+  coord_trans(y = "pseudo_log") +
+  scale_x_continuous(breaks=c(1:14), minor_breaks = NULL, labels = levels(SI.dat$bay)) +
+  ylab("Kdry") +
+  xlab("Bay")
+
+print(g3)
+
+png("./figs/SI_Kdry_scatter_plots.png", 10.5, 3, units='in', res=300)
+ggpubr::ggarrange(g1, g2, g3, ncol=3, nrow=1, labels=c("a", "b", "c"))
+dev.off()
+

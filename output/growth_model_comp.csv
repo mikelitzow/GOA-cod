@@ -1,8 +1,8 @@
 "","formula","elpd_diff","se_diff"
-"cod_growth2s","growth.rate ~ s(julian.first, k = 4) + s(fit.temp.mu, k = 4) + s(mean.cpue.4, k = 4) + (1 | bay_fac/site_fac)",0,0
-"cod_growth2","growth.rate ~ s(julian.first, k = 4) + s(fit.temp.mu, k = 4) + s(mean.cpue.4, k = 4) + bay_fac",-78.915980981547,19.8724725492499
-"cod_growth1","growth.rate ~ s(julian.first, k = 4) + s(fit.temp.mu, k = 4) + bay_fac",-82.3640970386287,20.2645301346657
-"cod_growth0","growth.rate ~ s(julian.first, k = 4) + bay_fac",-86.3789047039955,20.3740723844758
-"cod_growth3","growth.rate ~ s(fit.temp.mu, k = 4) + s(mean.cpue.4, k = 4) + bay_fac",-108.255119625818,21.5166331779342
-"cod_growth4","growth.rate ~ s(mean.cpue.4, k = 4) + bay_fac",-113.452201684623,21.582475133409
-"cod_growth5","growth.rate ~ s(fit.temp.mu, k = 4) + bay_fac",-126.000248564739,22.3883389413305
+"cod_growth2s","growth.rate_stnd ~ s(julian.first, k = 4) + s(fit.temp.mu, k = 4) + s(mean.cpue.4, k = 4) + (1 | bay_fac/site_fac)",0,0
+"cod_growth2","growth.rate_stnd ~ s(julian.first, k = 4) + s(fit.temp.mu, k = 4) + s(mean.cpue.4, k = 4) + bay_fac",-78.5680647618167,19.8993920078982
+"cod_growth1","growth.rate_stnd ~ s(julian.first, k = 4) + s(fit.temp.mu, k = 4) + bay_fac",-82.2507054924496,20.2233647631846
+"cod_growth0","growth.rate_stnd ~ s(julian.first, k = 4) + bay_fac",-86.3474360728121,20.3497204661424
+"cod_growth3","growth.rate_stnd ~ s(fit.temp.mu, k = 4) + s(mean.cpue.4, k = 4) + bay_fac",-108.901129893702,21.468000809847
+"cod_growth4","growth.rate_stnd ~ s(mean.cpue.4, k = 4) + bay_fac",-113.188853984593,21.513375455477
+"cod_growth5","growth.rate_stnd ~ s(fit.temp.mu, k = 4) + bay_fac",-126.470435797688,22.3452461207085

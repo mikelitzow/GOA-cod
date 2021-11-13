@@ -450,7 +450,7 @@ g1 <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
-  labs(x = "ÂºC", y = "Growth") +
+  labs(x = "Summer temperature (ºC)", y = "Growth rate (anomaly)") +
   theme_bw() 
 
 print(g1)
@@ -481,16 +481,43 @@ g2 <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
-  labs(x = "Fourth root CPUE", y = "Growth") +
+  labs(x = "Fourth root CPUE", y = "Growth rate (anomaly)") +
   theme_bw()
 
 print(g2)
 
 
-png("figs/cod_growth_2s_temp_cpue.png", 7, 3, units='in', res=300)
+png("figs/Fig7_cod_growth_2s_temp_cpue.png", 7, 3, units='in', res=300)
 ggpubr::ggarrange(g1, g2,
-                  ncol = 2)
+                  ncol = 2,
+                  labels = "auto")
 dev.off()
+
+## add scatter plot for SI -------------------------------
+
+SI.dat <- growth.data
+
+
+SI.dat$jitter.growth.rate <- jitter(SI.dat$growth.rate, factor = 2)
+SI.dat$jitter.fit.temp.mu <- jitter(SI.dat$fit.temp.mu, factor = 10)
+
+SI.g1 <- ggplot(SI.dat, aes(jitter.fit.temp.mu, jitter.growth.rate)) +
+  geom_point(size = 1, alpha = 0.5) +
+  labs(x = "Summer temperature (ºC)", y = "Growth rate (mm / d)") +
+  theme_bw() 
+
+SI.g1
+
+SI.dat$jitter.fourth.root.cpue <- jitter(SI.dat$cpue.4, factor = 20)
+
+SI.g2 <- ggplot(SI.dat) +
+  aes(jitter.fourth.root.cpue, jitter.growth.rate) +
+  geom_point(size = 1, alpha = 0.5) +
+  labs(x = "Fourth root CPUE", y = "Growth rate (mm / d)") +
+  theme_bw() 
+
+print(SI.g2)
+
 
 ## get predicted growth and CI for ms. --------------------------------
 growth2s_formula <-  bf(growth.rate_stnd ~ s(julian.first, k = 4) + s(fit.temp.mu, k = 4) + s(mean.cpue.4, k = 4) + (1 | bay_fac/site_fac))

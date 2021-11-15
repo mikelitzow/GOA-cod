@@ -36,7 +36,7 @@ map.plot <- ggplot(ak) +
         legend.text = element_text(size=8),
         legend.title = element_blank(),
         legend.box.margin = margin(1,1,1,1,unit='pt')) +
-  scale_fill_manual(values=cb[c(3,7)]) +
+  scale_fill_manual(values=cb[c(1,7)]) +
   ggtitle(label = "a) Study site") +
   scale_x_continuous(breaks = c(-160, -156, -152)) +
   scale_y_continuous(breaks = c(55, 56, 57, 58))

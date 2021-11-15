@@ -335,7 +335,7 @@ g4 <- ggplot(mod.95) +
   geom_errorbar(aes(ymin = ymin.95, ymax = ymax.95), width = 0.5) +
   geom_point(size = 3) +
   theme(axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
-  ylab("Total length(mm)") +
+  ylab("Total length (mm)") +
   xlab("Bay") +
   ylim(30, 60) 
 
@@ -345,7 +345,7 @@ print(g4)
 ## combine plots
 
 png("figs/Fig5_combined_predicted_length_cod_gamma_settle_len2.png", 8, 6, units='in', res=300)
-ggpubr::ggarrange(g1, g2, g3, g4, ncol=2, nrow=2, labels=c("a", "b", "c", "d"))
+ggpubr::ggarrange(g1, g2, g3, g4, ncol=2, nrow=2, labels="auto")
 dev.off()
 
 ## add scatter plot for SI -------------------------------

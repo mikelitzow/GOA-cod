@@ -442,7 +442,7 @@ dat_ce[["upper_90"]] <- ce1s_2$fit.temp.mu[["upper__"]]
 dat_ce[["lower_90"]] <- ce1s_2$fit.temp.mu[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$fit.temp.mu[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$fit.temp.mu[["lower__"]]
-dat_ce[["rug.anom"]] <- c(unique(cod.length.data$fit.temp.mu), rep(NA, 100-length(unique(cod.length.data$fit.temp.mu))))
+dat_ce[["rug.anom"]] <- c(unique(growth.data$fit.temp.mu), rep(NA, 100-length(unique(growth.data$fit.temp.mu))))
 
 g1 <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
@@ -451,6 +451,7 @@ g1 <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
   labs(x = "Summer temperature (ºC)", y = "Growth rate (anomaly)") +
+  geom_rug(aes(x=rug.anom, y=NULL)) +
   theme_bw() 
 
 print(g1)
@@ -473,7 +474,7 @@ dat_ce[["upper_90"]] <- ce1s_2$mean.cpue.4[["upper__"]]
 dat_ce[["lower_90"]] <- ce1s_2$mean.cpue.4[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$mean.cpue.4[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$mean.cpue.4[["lower__"]]
-dat_ce[["rug.anom"]] <- c(unique(cod.length.data$mean.cpue.4), rep(NA, 100-length(unique(cod.length.data$mean.cpue.4))))
+dat_ce[["rug.anom"]] <- c(unique(growth.data$mean.cpue.4), rep(NA, 100-length(unique(growth.data$mean.cpue.4))))
 
 g2 <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
@@ -481,6 +482,7 @@ g2 <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
+  geom_rug(aes(x=rug.anom, y=NULL)) +
   labs(x = "Fourth root CPUE", y = "Growth rate (anomaly)") +
   theme_bw()
 
@@ -508,7 +510,7 @@ SI.g1 <- ggplot(SI.dat, aes(jitter.fit.temp.mu, jitter.growth.rate)) +
 
 SI.g1
 
-SI.dat$jitter.fourth.root.cpue <- jitter(SI.dat$cpue.4, factor = 20)
+SI.dat$jitter.fourth.root.cpue <- jitter(SI.dat$cpue.4, factor = 30)
 
 SI.g2 <- ggplot(SI.dat) +
   aes(jitter.fourth.root.cpue, jitter.growth.rate) +
@@ -517,6 +519,12 @@ SI.g2 <- ggplot(SI.dat) +
   theme_bw() 
 
 print(SI.g2)
+
+png("figs/SI_cod_growth_2s_temp_cpue.png", 7, 3, units='in', res=300)
+ggpubr::ggarrange(SI.g1, SI.g2,
+                  ncol = 2,
+                  labels = "auto")
+dev.off()
 
 
 ## get predicted growth and CI for ms. --------------------------------

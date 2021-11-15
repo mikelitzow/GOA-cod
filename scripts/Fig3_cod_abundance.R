@@ -307,7 +307,10 @@ SI.dat$bay[change] <- "Anton Larsen"
 change <- grep("Cook", SI.dat$bay)
 SI.dat$bay[change] <- "Cook"
 
-g1 <- ggplot(SI.dat, aes(temp.anom, cod.age.0)) +
+SI.dat$jitter.cod.age.0 <- jitter(SI.dat$cod.age.0, factor = 2)
+SI.dat$jitter.temp.anom <- jitter(SI.dat$temp.anom, factor = 40)
+
+g1 <- ggplot(SI.dat, aes(jitter.temp.anom, jitter.cod.age.0)) +
     geom_point(size = 1, alpha = 0.5) +
     labs(x = "Egg/larval temperature anomaly", y = "# fish / set") +
     theme_bw() +
@@ -316,9 +319,10 @@ g1 <- ggplot(SI.dat, aes(temp.anom, cod.age.0)) +
 
 g1
 
+SI.dat$jitter.julian <- jitter(SI.dat$julian, factor = 2)
 
 g2 <- ggplot(SI.dat) +
-    aes(julian, cod.age.0) +
+    aes(jitter.julian, jitter.cod.age.0) +
     geom_point(size = 1, alpha = 0.5) +
     labs(x = "Day of year", y = "# fish / set") +
     theme_bw() +
@@ -328,8 +332,11 @@ g2 <- ggplot(SI.dat) +
 print(g2)
 
 
+SI.dat$jitter.cod.age.0 <- jitter(SI.dat$cod.age.0, factor = 1)
+SI.dat$jitter.ssb.1000 <- jitter(SI.dat$ssb/1000, factor = 10)
+
 g3 <- ggplot(SI.dat) +
-    aes(ssb/1000, cod.age.0) +
+    aes(jitter.ssb.1000, jitter.cod.age.0) +
     geom_point(size = 1, alpha = 0.5) +
     labs(x = "SSB (1000 t)", y = "# fish / set") +
     theme_bw() +
@@ -345,13 +352,17 @@ order$Bay[1:2] <- c("Anton Larsen", "Cook")
 
 SI.dat$long <- order$lon[match(SI.dat$bay, order$Bay)]
 SI.dat$bay <- reorder(SI.dat$bay, desc(SI.dat$long))
+SI.dat$bay.number <- as.numeric(SI.dat$bay)
+SI.dat$jitter.bay <- jitter(SI.dat$bay.number, factor = 1.5)
+
 
 g4 <- ggplot(SI.dat) +
-    aes(bay, cod.age.0) +
+    aes(jitter.bay, jitter.cod.age.0) +
     geom_point(size = 1, alpha = 0.5) +
     theme(axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
     coord_trans(y = "pseudo_log") +
     scale_y_continuous(breaks=c(0, 1, 5, 10, 20, 50, 100, 200, 500, 2000), minor_breaks = NULL) +
+    scale_x_continuous(breaks=c(1:15), minor_breaks = NULL, labels = levels(SI.dat$bay)) +
     ylab("# fish / set") +
     xlab("Bay")
 

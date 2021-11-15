@@ -241,7 +241,6 @@ g <- ggplot(dat_ce) +
   ylim(45,70) +
   theme_bw()
 print(g)
-ggsave("./figs/sst_predicted_effect_cod_length.png", width = 5, height = 4)
 
 
 ## 95% CI
@@ -271,7 +270,6 @@ g <- ggplot(dat_ce) +
   ylim(45,70) +
   theme_bw()
 print(g)
-ggsave("./figs/residual.cpue_predicted_effect_cod_length.png", width = 5, height = 4)
 
 ## predict length by day for Julian day ---------------
 

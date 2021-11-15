@@ -91,7 +91,6 @@ ggplot(plot.dat, aes(bay_fac, fit.temp.mu, fill=year_fac)) +
   scale_color_manual(values=cb[c(2,4,6)]) +
   theme(axis.title.x = element_blank(), axis.text.x = element_text(angle=45, vjust = 1, hjust=1))
 
-ggsave("./figs/predicted_summer_temp_bay_year.png", width=7, height=4, units='in')
 
 ggplot(plot.dat, aes(bay_fac, Estimate, fill=year_fac)) +
   geom_bar(position = "dodge", stat="identity", color="grey") +
@@ -99,8 +98,6 @@ ggplot(plot.dat, aes(bay_fac, Estimate, fill=year_fac)) +
   scale_fill_manual(values=cb[c(2,4,6)]) +
   scale_color_manual(values=cb[c(2,4,6)]) +
   theme(axis.title.x = element_blank(), axis.text.x = element_text(angle=45, vjust = 1, hjust=1))
-
-ggsave("./figs/predicted_Kdry_bay_year.png", width=7, height=4, units='in')
 
 avg.dat <- cod.condition.data %>%
   group_by(year_fac, bay_fac) %>%
@@ -120,5 +117,3 @@ ggplot(avg.dat, aes(bay_fac, mean, fill=year_fac)) +
   scale_fill_manual(values=cb[c(2,4,6)]) +
   scale_color_manual(values=cb[c(2,4,6)]) +
   theme(axis.title.x = element_blank(), axis.text.x = element_text(angle=45, vjust = 1, hjust=1))
-
-ggsave("./figs/observed_raw_Kdry_bay_year.png", width=7, height=4, units='in')

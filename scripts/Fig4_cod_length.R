@@ -289,8 +289,8 @@ dat_ce[["upper_90"]] <- ce1s_2$julian[["upper__"]]
 dat_ce[["lower_90"]] <- ce1s_2$julian[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$julian[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$julian[["lower__"]]
-dat_ce[["rug.anom"]] <- c(jitter(unique(cod.data$ssb), amount = 0.1),
-                          rep(NA, 100-length(unique(cod.data$ssb))))
+dat_ce[["rug.anom"]] <- c(unique(cod.length.data$julian),
+                          rep(NA, 100-length(unique(cod.length.data$julian))))
 
 g <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
@@ -299,6 +299,7 @@ g <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
   labs(x = "Day of year", y = "Total length (mm)") +
+  geom_rug(aes(x=rug.anom, y=NULL)) +
   scale_x_continuous(breaks = seq(190, 240, 10)) +
   theme_bw()
 print(g)

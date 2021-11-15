@@ -259,6 +259,8 @@ dat_ce[["upper_90"]] <- ce1s_2$fit.temp.mu[["upper__"]]
 dat_ce[["lower_90"]] <- ce1s_2$fit.temp.mu[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$fit.temp.mu[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$fit.temp.mu[["lower__"]]
+dat_ce[["rug.anom"]] <- c(unique(cod.condition.data$fit.temp.mu), rep(NA, 100-length(unique(cod.condition.data$fit.temp.mu))))
+
 
 g1 <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
@@ -268,6 +270,7 @@ g1 <- ggplot(dat_ce) +
   geom_line(size = 1.5, color = "red3") +
   labs(x = "Summer temperature (ºC)", y = "Kdry (anomaly)") +
   theme_bw() +
+  geom_rug(aes(x=rug.anom, y=NULL)) +
   coord_cartesian(ylim = c(-1.1, 0.65))
 print(g1)
 
@@ -288,6 +291,7 @@ dat_ce[["upper_90"]] <- ce1s_2$fourth.root.cpue[["upper__"]]
 dat_ce[["lower_90"]] <- ce1s_2$fourth.root.cpue[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$fourth.root.cpue[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$fourth.root.cpue[["lower__"]]
+dat_ce[["rug.anom"]] <- c(unique(cod.condition.data$fourth.root.cpue), rep(NA, 100-length(unique(cod.condition.data$fourth.root.cpue))))
 
 g2 <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
@@ -297,6 +301,7 @@ g2 <- ggplot(dat_ce) +
   geom_line(size = 1.5, color = "red3") +
   labs(x = "Fourth root CPUE", y = "Kdry (anomaly)") +
   coord_cartesian(ylim = c(-1.1, 0.65)) +
+  geom_rug(aes(x=rug.anom, y=NULL)) +
   theme_bw()
 
 print(g2)
@@ -632,6 +637,7 @@ dat_ce[["upper_90"]] <- ce1s_2$fit.temp.mu[["upper__"]]
 dat_ce[["lower_90"]] <- ce1s_2$fit.temp.mu[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$fit.temp.mu[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$fit.temp.mu[["lower__"]]
+dat_ce[["rug.anom"]] <- c(unique(cod.condition.data$fit.temp.mu), rep(NA, 100-length(unique(cod.condition.data$fit.temp.mu))))
 
 g4 <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
@@ -641,6 +647,7 @@ g4 <- ggplot(dat_ce) +
   geom_line(size = 1.5, color = "red3") +
   labs(x = "Summer temperature (ºC)", y = "HSI (anomaly)") +
   theme_bw() +
+  geom_rug(aes(x=rug.anom, y=NULL)) +
   coord_cartesian(ylim = c(-2,1.5))
 print(g4)
 
@@ -661,6 +668,7 @@ dat_ce[["upper_90"]] <- ce1s_2$fourth.root.cpue[["upper__"]]
 dat_ce[["lower_90"]] <- ce1s_2$fourth.root.cpue[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$fourth.root.cpue[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$fourth.root.cpue[["lower__"]]
+dat_ce[["rug.anom"]] <- c(unique(cod.condition.data$fourth.root.cpue), rep(NA, 100-length(unique(cod.condition.data$fourth.root.cpue))))
 
 g5 <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
@@ -670,6 +678,7 @@ g5 <- ggplot(dat_ce) +
   geom_line(size = 1.5, color = "red3") +
   labs(x = "Fourth root CPUE", y = "HSI (anomaly)") +
   coord_cartesian(ylim = c(-2,1.5)) +
+  geom_rug(aes(x=rug.anom, y=NULL)) +
   theme_bw()
 print(g5)
 

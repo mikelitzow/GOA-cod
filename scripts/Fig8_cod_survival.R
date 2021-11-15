@@ -342,7 +342,7 @@ g1 <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
-  labs(x = "Summer temperature (ºC)", y = "Survival rate (anomaly)") +
+  labs(x = "Summer temperature (ºC)", y = "Abundance change (anomaly)") +
   ylim(-3.7,1.2) +
   geom_rug(aes(x=rug.anom, y=NULL)) +
   theme_bw() 
@@ -377,7 +377,7 @@ g2 <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
-  labs(x = "Fourth root CPUE", y = "Survival rate (anomaly)") +
+  labs(x = "Fourth root CPUE", y = "Abundance change (anomaly)") +
   geom_rug(data = rug.anom, aes(x=mean.cpue.4, y=NULL)) +
   ylim(-3.7,1.2) +
   theme_bw() 
@@ -415,7 +415,8 @@ g3 <- ggplot(mod.95) +
   geom_errorbar(aes(ymin = ymin.95, ymax = ymax.95), width = 0.5) +
   geom_point(size = 3) +
   theme(axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
-  ylab("Survival rate (anomaly)") +
+  ylab("      Abundance change 
+       (anomaly)") +
   xlab("Bay")
 
 print(g3)
@@ -434,7 +435,7 @@ SI.dat <- surv.data
 
 SI.g1 <- ggplot(SI.dat, aes(surv.rate)) +
   geom_histogram(bins=60, fill = "grey", color = "dark grey") +
-  xlab("Survival rate") +
+  xlab("Fourth root CPUE trend (proportion change / d)") +
   ylab("Count") +
   geom_vline(xintercept = 0, lty = 2)
   
@@ -452,7 +453,8 @@ SI.dat$jitter.fit.temp.mu <- jitter(SI.dat$fit.temp.mu, factor = 40)
 
 SI.g2 <- ggplot(SI.dat, aes(jitter.fit.temp.mu, jitter.surv.rate)) +
   geom_point(size = 1, alpha = 0.5) +
-  labs(x = "Summer temperature (ºC)", y = "Survival rate") +
+  labs(x = "Summer temperature (ºC)", y = "Fourth root CPUE trend 
+       (proportion change / d)       ") +
   theme_bw() 
 
 SI.g2
@@ -462,7 +464,8 @@ SI.dat$jitter.fourth.root.cpue <- jitter(SI.dat$first.cpue.4, factor = 10)
 SI.g3 <- ggplot(SI.dat) +
   aes(jitter.fourth.root.cpue, jitter.surv.rate) +
   geom_point(size = 1, alpha = 0.5) +
-  labs(x = "Fourth root CPUE", y = "Survival rate") +
+  labs(x = "Fourth root CPUE", y = "Fourth root CPUE trend 
+       (proportion change / d)       ") +
   theme_bw() 
 
 print(SI.g3)
@@ -481,7 +484,8 @@ SI.g4 <- ggplot(SI.dat) +
   geom_point(size = 1, alpha = 0.5) +
   theme(axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
   scale_x_continuous(breaks=c(1:11), minor_breaks = NULL, labels = levels(SI.dat$bay)) +
-  ylab("Survival rate") +
+  ylab("Fourth root CPUE trend 
+       (proportion change / d)       ") +
   xlab("Bay")
 
 print(SI.g4)

@@ -105,7 +105,6 @@ length1_formula <-  bf(length ~ s(julian, k = 4) + s(temp.anom, k = 4) + s(fourt
 
 length2_formula <-  bf(length ~ s(julian, k = 4) + s(temp.anom, k = 4) + s(fourth.root.cpue, k = 4) + bay_fac)
 
-
 ## Set model distribution
 Gamma <- Gamma(link = "log")
 

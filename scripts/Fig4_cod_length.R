@@ -146,7 +146,6 @@ g <- ggplot(cod.length.data) +
   geom_point() +
   geom_smooth(method = 'lm')
 print(g)
-ggsave("./figs/cod_length_temp.png", width = 5, height = 5)
 
 g <- ggplot(cod.length.data) +
   aes(x = fit.temp.mu, y = log_length) +
@@ -160,7 +159,6 @@ g <- ggplot(cod.length.data) +
   geom_point() +
   geom_smooth(method = 'lm')
 print(g)
-ggsave("./figs/cod_length_julian.png", width = 5, height = 5)
 
 g <- ggplot(cod.length.data) +
   aes(x = julian, y = log_length) +
@@ -174,7 +172,7 @@ g <- ggplot(cod.length.data) +
   geom_point() +
   geom_smooth(method = 'lm')
 print(g)
-ggsave("./figs/cod_length_residual.cpue.png", width = 5, height = 5)
+
 
 ## brms: setup ---------------------------------------------
 
@@ -293,6 +291,8 @@ dat_ce[["upper_90"]] <- ce1s_2$julian[["upper__"]]
 dat_ce[["lower_90"]] <- ce1s_2$julian[["lower__"]]
 dat_ce[["upper_80"]] <- ce1s_3$julian[["upper__"]]
 dat_ce[["lower_80"]] <- ce1s_3$julian[["lower__"]]
+dat_ce[["rug.anom"]] <- c(jitter(unique(cod.data$ssb), amount = 0.1),
+                          rep(NA, 100-length(unique(cod.data$ssb))))
 
 g <- ggplot(dat_ce) +
   aes(x = effect1__, y = estimate__) +
@@ -315,8 +315,13 @@ mod <- lm(estimate__ ~ julian, data = linear_growth)
 summary(mod) # ~ 0.81 mm/day
 
 # make SI plot of raw data
-g <- ggplot(cod.length.data) +
-  aes(julian, length) +
+SI.dat <- cod.length.data
+
+SI.dat$jitter.length <- jitter(SI.dat$length, factor = 2)
+SI.dat$jitter.julian <- jitter(SI.dat$julian, factor = 3)
+
+g <- ggplot(SI.dat) +
+  aes(jitter.julian, jitter.length) +
   geom_point(size = 1, alpha = 0.5) +
   labs(x = "Day of year", y = "Total length (mm)") +
   theme_bw()

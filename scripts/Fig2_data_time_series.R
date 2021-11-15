@@ -300,7 +300,7 @@ abundance <- ggplot(plot.abundance, aes(year, estimate__)) +
   coord_trans(y = "pseudo_log") +
   scale_y_continuous(breaks = c(0,1,5,10,50,100,200,500)) +
   theme(axis.title.x = element_blank()) +
-  labs(y = "Fish / set") +
+  labs(y = "# fish / set") +
   geom_hline(yintercept = mean(plot.abundance$estimate__), lty = 2)
 
 abundance
@@ -327,7 +327,7 @@ length <- ggplot(plot.length, aes(year, estimate__)) +
   geom_bar(stat = "identity", position = "dodge", fill = "grey80") +
   geom_errorbar(aes(ymax=upper__, ymin=lower__), width = 0.4) +
   theme(axis.title.x = element_blank()) +
-  labs(y = "Length (mm)") +
+  labs(y = "Total length (mm)") +
   geom_hline(yintercept = mean(plot.length$estimate__, na.rm = T), lty = 2) +
   coord_cartesian(ylim = c(40,85))
 

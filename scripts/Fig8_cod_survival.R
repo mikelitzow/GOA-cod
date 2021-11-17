@@ -342,7 +342,7 @@ g1 <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
-  labs(x = "Summer temperature (ºC)", y = "Abundance change (anomaly)") +
+  labs(x = "Summer temperature (ºC)", y = "Abundance trend (anomaly)") +
   ylim(-3.7,1.2) +
   geom_rug(aes(x=rug.anom, y=NULL)) +
   theme_bw() 
@@ -377,7 +377,7 @@ g2 <- ggplot(dat_ce) +
   geom_ribbon(aes(ymin = lower_90, ymax = upper_90), fill = "grey85") +
   geom_ribbon(aes(ymin = lower_80, ymax = upper_80), fill = "grey80") +
   geom_line(size = 1, color = "red3") +
-  labs(x = "Fourth root CPUE", y = "Abundance change (anomaly)") +
+  labs(x = "Fourth root CPUE", y = "Abundance trend (anomaly)") +
   geom_rug(data = rug.anom, aes(x=mean.cpue.4, y=NULL)) +
   ylim(-3.7,1.2) +
   theme_bw() 
@@ -415,8 +415,8 @@ g3 <- ggplot(mod.95) +
   geom_errorbar(aes(ymin = ymin.95, ymax = ymax.95), width = 0.5) +
   geom_point(size = 3) +
   theme(axis.text.x = element_text(angle=30, vjust=1, hjust=1)) +
-  ylab("Abundance change 
-       (anomaly)       ") +
+  ylab("Abundance trend 
+       (anomaly)        ") +
   xlab("Bay")
 
 print(g3)
